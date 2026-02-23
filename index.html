@@ -3,330 +3,347 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Uber Eats 終端 | Mythic</title>
+    <title>Uber Eats 優惠清單</title>
     <style>
         :root { 
-            --ue-green: #06C167; --ue-green-glow: rgba(6, 193, 103, 0.6);
-            --bg-dark: #070709; --card-bg: rgba(20, 20, 22, 0.85);
-            --text-main: #ffffff; --text-sub: #888891;
-            --border-color: #2a2a2e; --danger: #FF3B30;
-            --gold: #FFD700; --gold-glow: rgba(255, 215, 0, 0.5);
+            --ue-green: #06C167; 
+            --bg-dark: #121212; 
+            --card-bg: #1e1e1e;
+            --text-main: #ffffff; 
+            --text-sub: #a0a0a0;
+            --border-color: #333333; 
         }
         
         body { 
-            font-family: "SF Pro Display", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; 
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; 
             background-color: var(--bg-dark);
-            background-image: linear-gradient(rgba(6, 193, 103, 0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(6, 193, 103, 0.03) 1px, transparent 1px);
-            background-size: 30px 30px; background-position: center center;
-            animation: gridMove 20s linear infinite;
             margin: 0; padding: 0; color: var(--text-main); 
-            -webkit-tap-highlight-color: transparent; letter-spacing: 0.5px;
-            overflow-x: hidden;
+            -webkit-tap-highlight-color: transparent;
         }
-        @keyframes gridMove { 0% { background-position: 0 0; } 100% { background-position: 30px 30px; } }
-        
-        #matrix-canvas { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 1; opacity: 0; transition: opacity 1s; pointer-events: none; }
-        #matrix-canvas.active { opacity: 0.4; }
 
-        /* 時空裂縫模式 */
-        body.rift-mode .card { transform: perspective(1000px) rotateX(10deg); box-shadow: 0 20px 50px rgba(6, 193, 103, 0.3); }
-
+        /* === 頂部導航 === */
         .header { 
-            position: sticky; top: 0; background: rgba(7, 7, 9, 0.9); 
-            backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+            position: sticky; top: 0; background: rgba(18, 18, 18, 0.95); 
+            backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
             z-index: 100; border-bottom: 1px solid var(--border-color); padding-bottom: 15px;
         }
         
         .title-bar { padding: 16px 20px 10px; display: flex; justify-content: space-between; align-items: center; }
-        .title-bar h1 { 
-            margin: 0; font-size: 26px; font-weight: 900; 
-            background: linear-gradient(90deg, #fff, var(--ue-green));
-            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-            text-transform: uppercase; letter-spacing: 2px;
-        }
-        
-        /* 脈衝燈 */
-        .pulse-dot { width: 8px; height: 8px; background: var(--ue-green); border-radius: 50%; display: inline-block; margin-left: 8px; box-shadow: 0 0 10px var(--ue-green); animation: pulseLamp 1.5s infinite; }
-        @keyframes pulseLamp { 0% { opacity: 1; transform: scale(1); } 50% { opacity: 0.4; transform: scale(1.2); } 100% { opacity: 1; transform: scale(1); } }
+        .title-bar h1 { margin: 0; font-size: 22px; font-weight: 700; color: var(--text-main); }
+        .stats-badge { font-size: 12px; color: var(--text-sub); background: #2a2a2a; padding: 4px 10px; border-radius: 12px; }
+        .stats-badge span { color: var(--ue-green); font-weight: bold; }
 
+        /* === 搜尋與控制台 === */
         .search-container { padding: 5px 20px 15px; }
         .search-box {
-            width: 100%; box-sizing: border-box; background: rgba(0,0,0,0.5); border: 1px solid #333;
-            color: var(--ue-green); padding: 14px 16px; border-radius: 12px; font-size: 15px;
-            font-family: 'Courier New', Courier, monospace; outline: none; transition: 0.3s;
+            width: 100%; box-sizing: border-box; background: #222; border: 1px solid #444;
+            color: var(--text-main); padding: 12px 16px; border-radius: 8px; font-size: 15px;
+            outline: none; transition: 0.2s;
         }
+        .search-box:focus { border-color: var(--ue-green); }
 
-        .control-panel { padding: 0 20px 15px; display: flex; flex-direction: column; gap: 12px; }
-        .toggle-row { display: flex; align-items: center; justify-content: space-between; background: rgba(255,255,255,0.03); padding: 12px 16px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.05); }
+        .control-panel { padding: 0 20px 15px; display: flex; flex-direction: column; gap: 10px; }
+        .toggle-row { display: flex; align-items: center; justify-content: space-between; background: #1a1a1a; padding: 12px 16px; border-radius: 8px; }
+        .toggle-group { display: flex; align-items: center; gap: 10px; }
         
-        .filter-scroll { overflow-x: auto; white-space: nowrap; padding: 5px 20px; display: flex; gap: 10px; scrollbar-width: none; }
-        .filter-btn { background: rgba(255,255,255,0.05); color: #aaa; border: 1px solid rgba(255,255,255,0.1); padding: 10px 20px; border-radius: 24px; font-size: 14px; font-weight: 800; cursor: pointer; }
-        .filter-btn.active { background: rgba(6, 193, 103, 0.15); color: var(--ue-green); border-color: var(--ue-green); box-shadow: 0 0 20px var(--ue-green-glow) inset; }
+        .switch { position: relative; display: inline-block; width: 40px; height: 22px; }
+        .switch input { opacity: 0; width: 0; height: 0; }
+        .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #444; transition: .3s; border-radius: 22px; }
+        .slider:before { position: absolute; content: ""; height: 16px; width: 16px; left: 3px; bottom: 3px; background-color: white; transition: .3s; border-radius: 50%; }
+        input:checked + .slider { background-color: var(--ue-green); }
+        input:checked + .slider:before { transform: translateX(18px); }
+        .settings-text { font-size: 14px; color: #ddd; }
 
-        .container { max-width: 600px; margin: 0 auto; padding: 20px 20px 100px; position: relative; z-index: 10; }
+        /* === 分類按鈕 === */
+        .filter-scroll { overflow-x: auto; white-space: nowrap; padding: 5px 20px; display: flex; gap: 8px; scrollbar-width: none; }
+        .filter-scroll::-webkit-scrollbar { display: none; }
+        .filter-btn { 
+            background: #222; color: #aaa; border: 1px solid #444;
+            padding: 8px 16px; border-radius: 20px; font-size: 14px; font-weight: 600; 
+            cursor: pointer; transition: 0.2s;
+        }
+        .filter-btn.active { background: rgba(6, 193, 103, 0.1); color: var(--ue-green); border-color: var(--ue-green); }
+
+        /* === 列表容器 === */
+        .container { max-width: 600px; margin: 0 auto; padding: 20px 20px 60px; }
         
         .card { 
             background: var(--card-bg); border: 1px solid var(--border-color); 
-            border-radius: 16px; margin-bottom: 20px; position: relative; overflow: hidden; 
-            transition: 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5); backdrop-filter: blur(10px);
+            border-radius: 12px; margin-bottom: 16px; position: relative; overflow: hidden; 
+            transition: 0.2s;
         }
-        
-        /* UR卡片動態邊框 */
-        .card.ur-tier { border: 1px solid var(--gold); animation: urBorder 2s infinite alternate; }
-        @keyframes urBorder { 0% { border-color: var(--gold); box-shadow: 0 0 5px var(--gold-glow); } 100% { border-color: #fff; box-shadow: 0 0 20px var(--gold); } }
+        .card.used { opacity: 0.5; filter: grayscale(1); }
 
-        .card.used { opacity: 0.3; filter: grayscale(1); }
-
-        .card-info { padding: 20px; cursor: pointer; }
-        .code { font-size: 28px; font-weight: 900; color: var(--ue-green); font-family: 'Courier New', monospace; text-shadow: 0 0 15px var(--ue-green-glow); }
+        .card-info { padding: 16px; cursor: pointer; }
+        .card-top-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+        .code { font-size: 22px; font-weight: 700; color: var(--ue-green); letter-spacing: 0.5px; }
         
+        .share-btn { background: #2a2a2a; border: none; color: #fff; border-radius: 50%; width: 32px; height: 32px; display: flex; justify-content: center; align-items: center; cursor: pointer; }
+        .share-btn:active { background: #444; }
+
+        .tag-row { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 10px; }
+        .tag { font-size: 11px; padding: 4px 8px; border-radius: 4px; font-weight: 600; }
+        .tag-scope { background: #333; color: #fff; }
+        .tag-date { background: rgba(255, 69, 58, 0.15); color: #ff6b6b; }
+
+        .desc { font-size: 15px; color: #e0e0e0; line-height: 1.5; }
+
         .giant-btn {
-            width: 100%; background: var(--ue-green); color: #000; border: none; padding: 18px 0; font-size: 16px; font-weight: 900;
-            text-align: center; letter-spacing: 4px; cursor: pointer; transition: 0.2s;
+            width: 100%; background: var(--ue-green); color: #fff; border: none; padding: 14px 0; font-size: 16px; font-weight: 700;
+            cursor: pointer; transition: 0.2s; display: flex; justify-content: center; align-items: center; gap: 8px;
         }
+        .giant-btn:active { background: #05a859; }
+        .card.used .giant-btn { background: #333; color: #888; }
 
-        /* 底部固定重置按鈕 */
-        .footer-reset { padding: 40px 20px; text-align: center; }
-        .reset-trigger { background: transparent; color: #555; border: 1px dashed #333; padding: 15px 30px; border-radius: 12px; cursor: pointer; font-size: 13px; transition: 0.3s; }
-        .reset-trigger:hover { color: var(--danger); border-color: var(--danger); background: rgba(255, 59, 48, 0.05); }
+        /* === 底部設定 === */
+        .footer-reset { padding: 20px; text-align: center; margin-top: 20px; border-top: 1px solid var(--border-color); }
+        .reset-trigger { background: transparent; color: #777; border: 1px solid #444; padding: 10px 20px; border-radius: 8px; cursor: pointer; font-size: 14px; transition: 0.2s; }
+        .reset-trigger:hover { color: #ff6b6b; border-color: #ff6b6b; }
 
-        /* 回頂部按鈕 */
-        .fab-top { position: fixed; bottom: 30px; right: 20px; width: 50px; height: 50px; background: rgba(10,10,12,0.9); border: 2px solid var(--ue-green); border-radius: 50%; display: flex; justify-content: center; align-items: center; color: var(--ue-green); opacity: 0; transform: translateY(20px); transition: 0.4s; z-index: 99; }
-        .fab-top.visible { opacity: 1; transform: translateY(0); }
+        .loading { text-align: center; color: var(--ue-green); padding: 40px 20px; font-size: 15px; font-weight: 600; }
 
-        .loading { text-align: center; color: var(--ue-green); padding: 80px 20px; font-size: 16px; font-weight: 900; animation: textPulse 1s infinite alternate; }
-        @keyframes textPulse { 0% { opacity: 0.3; } 100% { opacity: 1; } }
-
-        .toast { position: fixed; bottom: 90px; left: 50%; transform: translateX(-50%) translateY(30px); background: var(--ue-green); color: #000; padding: 16px 32px; border-radius: 40px; font-size: 16px; font-weight: 900; opacity: 0; transition: 0.5s; z-index: 999; }
+        .toast { 
+            position: fixed; bottom: 40px; left: 50%; transform: translateX(-50%) translateY(20px); 
+            background: #333; color: #fff; padding: 12px 24px; border-radius: 24px; 
+            font-size: 14px; font-weight: 600; opacity: 0; transition: 0.3s; 
+            pointer-events: none; z-index: 999; box-shadow: 0 4px 12px rgba(0,0,0,0.3); white-space: nowrap;
+        }
         .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
-
-        /* 解鎖遮罩 */
-        .audio-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.95); z-index: 9999; display: flex; flex-direction: column; justify-content: center; align-items: center; cursor: pointer; }
     </style>
 </head>
 <body>
 
-<canvas id="matrix-canvas"></canvas>
-
-<div id="audio-auth" class="audio-overlay" onclick="initSystem()">
-    <div class="pulse-dot" style="width:40px; height:40px; margin-bottom:20px;"></div>
-    <h2 style="color:white; letter-spacing:5px;">INITIATE SYSTEM</h2>
-    <p style="color:#666;">點擊任意處喚醒終端</p>
-</div>
-
 <div class="header">
     <div class="title-bar">
-        <h1 onclick="triggerGodMode()">UBER EATS<span class="pulse-dot"></span></h1>
-        <div class="stats-badge">駭入成功 <span id="stats-count">0</span></div>
+        <h1>Uber Eats 優惠</h1>
+        <div class="stats-badge">已領取 <span id="stats-count">0</span></div>
     </div>
     
     <div class="search-container">
-        <input type="text" id="search-input" class="search-box" placeholder="> 輸入指令或搜尋節點..." onkeyup="handleSearch(event)">
+        <input type="text" id="search-input" class="search-box" placeholder="搜尋優惠內容、代碼或地區..." onkeyup="handleSearch()">
     </div>
 
     <div class="control-panel">
         <div class="toggle-row">
-            <div class="toggle-group" style="display:flex; align-items:center; gap:10px;">
-                <input type="checkbox" id="toggle-new-user" onchange="toggleSettings()" style="width:20px; height:20px;">
+            <div class="toggle-group">
+                <label class="switch"><input type="checkbox" id="toggle-new-user" onchange="toggleSettings()"><span class="slider"></span></label>
                 <span class="settings-text">隱藏新戶代碼</span>
             </div>
-            <div class="toggle-group" style="display:flex; align-items:center; gap:10px;">
-                <input type="checkbox" id="toggle-hide-used" onchange="toggleSettings()" style="width:20px; height:20px;">
-                <span class="settings-text">隱藏已駭入</span>
+            <div class="toggle-group">
+                <label class="switch"><input type="checkbox" id="toggle-hide-used" onchange="toggleSettings()"><span class="slider"></span></label>
+                <span class="settings-text">隱藏已領取</span>
             </div>
         </div>
     </div>
 
     <div class="filter-scroll">
-        <button class="filter-btn active" onclick="filter('all')">全域網路 (<span id="count-all">0</span>)</button>
-        <button class="filter-btn" onclick="filter('hot')">一般</button>
-        <button class="filter-btn" onclick="filter('vip')">高階</button>
-        <button class="filter-btn" id="btn-filter-new" onclick="filter('new')">新進</button>
-        <button class="filter-btn" onclick="filter('card')">金融</button>
+        <button class="filter-btn active" onclick="filter('all')">全部 (<span id="count-all">0</span>)</button>
+        <button class="filter-btn" onclick="filter('hot')">一般優惠</button>
+        <button class="filter-btn" onclick="filter('vip')">會員優惠</button>
+        <button class="filter-btn" id="btn-filter-new" onclick="filter('new')">新戶專屬</button>
+        <button class="filter-btn" onclick="filter('card')">信用卡</button>
     </div>
 </div>
 
 <div class="container">
-    <div id="list"><div class="loading">正在掃描時空裂縫...</div></div>
+    <div id="list"><div class="loading">正在同步最新優惠資料...</div></div>
     
     <div class="footer-reset">
-        <button class="reset-trigger" onclick="resetMemory()">格式化記憶體紀錄</button>
+        <button class="reset-trigger" onclick="resetMemory()">清除歷史領取紀錄</button>
     </div>
 </div>
 
-<div class="fab-top" id="fab-top" onclick="window.scrollTo({top:0, behavior:'smooth'})">
-    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="18 15 12 9 6 15"></polyline></svg>
-</div>
-
-<div id="toast" class="toast">⚡ 解析完成</div>
+<div id="toast" class="toast">✅ 已複製，正在開啟 App...</div>
 
 <script>
     const csvUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSQfG95R3C-8YZIhBsIJUOLckEq3MpPihSYVSszeOgx9jmdnXsyE9ag9NgBx4gbZOUg5-2-qxx7zQit/pub?output=csv';
     let allData = [];
     let currentFilter = 'all';
     let searchQuery = '';
-    let isMatrixMode = false;
-    let audioCtx = null;
 
-    function initSystem() {
-        document.getElementById('audio-auth').style.display = 'none';
-        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-        playSound(800, 'square', 0.2);
-    }
-
-    function playSound(freq, type, duration) {
-        if (!audioCtx) return;
-        const osc = audioCtx.createOscillator();
-        const gain = audioCtx.createGain();
-        osc.type = type;
-        osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
-        gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
-        gain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + duration);
-        osc.connect(gain);
-        gain.connect(audioCtx.destination);
-        osc.start();
-        osc.stop(audioCtx.currentTime + duration);
-    }
-
-    // Matrix Rain
-    const canvas = document.getElementById('matrix-canvas');
-    const ctx = canvas.getContext('2d');
-    canvas.width = window.innerWidth; canvas.height = window.innerHeight;
-    const letters = '01'.split('');
-    const fontSize = 16;
-    const columns = canvas.width / fontSize;
-    const drops = [];
-    for(let i=0; i<columns; i++) drops[i] = 1;
-
-    function drawMatrix() {
-        ctx.fillStyle = 'rgba(0, 0, 0, 0.05)';
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
-        ctx.fillStyle = '#0F0';
-        ctx.font = fontSize + 'px monospace';
-        for(let i=0; i<drops.length; i++) {
-            const text = letters[Math.floor(Math.random()*letters.length)];
-            ctx.fillText(text, i*fontSize, drops[i]*fontSize);
-            if(drops[i]*fontSize > canvas.height && Math.random() > 0.975) drops[i] = 0;
-            drops[i]++;
-        }
-        if(isMatrixMode) requestAnimationFrame(drawMatrix);
-    }
-
-    let usedCodes = JSON.parse(localStorage.getItem('ue_used_codes')) || [];
-    let isOldUser = localStorage.getItem('ue_is_old_user') === 'true';
-    let isHideUsed = localStorage.getItem('ue_hide_used') === 'true';
+    // 讀取本地設定
+    let usedCodes = [];
+    let isOldUser = false;
+    let isHideUsed = false;
+    try {
+        usedCodes = JSON.parse(localStorage.getItem('ue_used_codes')) || [];
+        isOldUser = localStorage.getItem('ue_is_old_user') === 'true';
+        isHideUsed = localStorage.getItem('ue_hide_used') === 'true';
+    } catch(e) {}
 
     document.getElementById('toggle-new-user').checked = isOldUser;
     document.getElementById('toggle-hide-used').checked = isHideUsed;
     document.getElementById('btn-filter-new').style.display = isOldUser ? 'none' : 'inline-block';
+    
+    updateStats();
 
+    // 抓取雲端資料
     fetch(csvUrl).then(res => res.text()).then(csvText => {
         const rows = csvText.replace(/\r/g, '').split('\n');
         allData = [];
         for (let i = 1; i < rows.length; i++) {
             let cols = rows[i].split(',');
             if (cols.length < 4) continue;
-            const end = cols[0], label = cols[1], desc = cols[2], code = cols[3];
-            let type = 'hot';
-            if (label.includes('新') || desc.includes('新戶')) type = 'new';
-            else if (label.includes('會員')) type = 'vip';
-            else if (label.includes('卡')) type = 'card';
             
-            let isUR = desc.includes('免運') || desc.includes('150');
-            allData.push({ id: i, code, desc, type, label, end, isUR });
+            const end = cols[0].trim(), label = cols[1].trim(), desc = cols[2].trim(), code = cols[3].trim();
+            if (!code || code.toLowerCase() === '優惠碼') continue;
+
+            let type = 'hot';
+            let checkText = label + desc; 
+            
+            // 智慧分類邏輯
+            if (checkText.includes('新戶') || checkText.includes('新客') || checkText.includes('首購')) type = 'new';
+            else if (checkText.includes('會員') || checkText.includes('優市') || checkText.includes('自取')) type = 'vip';
+            else if (checkText.includes('卡') || checkText.includes('台新') || checkText.includes('中信') || checkText.includes('國泰') || checkText.includes('富邦') || checkText.includes('聯名') || checkText.includes('銀行')) type = 'card';
+
+            allData.push({ id: i, code, desc, type, label, end });
         }
-        renderList('all');
+        if(isOldUser && currentFilter === 'new') currentFilter = 'all';
+        renderList(currentFilter);
+    }).catch(() => {
+        document.getElementById('list').innerHTML = `<div class="loading" style="color:#ff6b6b;">資料讀取失敗，請檢查網路連線。</div>`;
     });
 
-    function handleSearch(e) {
+    // 搜尋功能
+    function handleSearch() {
         searchQuery = document.getElementById('search-input').value.toLowerCase();
-        if(e.key === 'Enter') {
-            if(searchQuery === '/matrix') {
-                isMatrixMode = !isMatrixMode;
-                canvas.classList.toggle('active');
-                if(isMatrixMode) drawMatrix();
-            }
-            if(searchQuery === '/rift') {
-                document.body.classList.toggle('rift-mode');
-            }
-            document.getElementById('search-input').value = '';
-        }
         renderList(currentFilter);
     }
 
+    // 設定開關
+    function toggleSettings() {
+        isOldUser = document.getElementById('toggle-new-user').checked;
+        isHideUsed = document.getElementById('toggle-hide-used').checked;
+        try {
+            localStorage.setItem('ue_is_old_user', isOldUser);
+            localStorage.setItem('ue_hide_used', isHideUsed);
+        } catch(e) {}
+        
+        document.getElementById('btn-filter-new').style.display = isOldUser ? 'none' : 'inline-block';
+        if(isOldUser && currentFilter === 'new') currentFilter = 'all';
+
+        renderList(currentFilter);
+    }
+
+    function updateStats() {
+        document.getElementById('stats-count').innerText = usedCodes.length;
+    }
+
+    // 渲染清單
     function renderList(filterType) {
         currentFilter = filterType;
         const container = document.getElementById('list');
         container.innerHTML = '';
         
-        let processed = allData;
-        if (isOldUser) processed = processed.filter(item => item.type !== 'new');
-        if (isHideUsed) processed = processed.filter(item => !usedCodes.includes(item.code));
-        if (searchQuery) processed = processed.filter(item => item.desc.includes(searchQuery) || item.code.includes(searchQuery));
+        document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
+        document.querySelector(`.filter-btn[onclick="filter('${filterType}')"]`).classList.add('active');
 
-        const final = filterType === 'all' ? processed : processed.filter(item => item.type === filterType);
-        document.getElementById('count-all').innerText = processed.length;
-        document.getElementById('stats-count').innerText = usedCodes.length;
+        let processedData = allData;
+        if (isOldUser) processedData = processedData.filter(item => item.type !== 'new');
+        if (isHideUsed) processedData = processedData.filter(item => !usedCodes.includes(item.code));
 
-        final.forEach(item => {
+        if (searchQuery) {
+            processedData = processedData.filter(item => 
+                item.desc.toLowerCase().includes(searchQuery) || 
+                item.code.toLowerCase().includes(searchQuery) || 
+                item.label.toLowerCase().includes(searchQuery)
+            );
+        }
+
+        const finalData = filterType === 'all' ? processedData : processedData.filter(item => item.type === filterType);
+        
+        document.getElementById('count-all').innerText = processedData.length;
+
+        if (finalData.length === 0) {
+            container.innerHTML = '<div class="loading" style="color:#a0a0a0;">目前分類無可用優惠</div>';
+            return;
+        }
+
+        finalData.forEach((item) => {
             let isUsed = usedCodes.includes(item.code);
             const card = document.createElement('div');
-            card.className = `card ${isUsed ? 'used' : ''} ${item.isUR ? 'ur-tier' : ''}`;
+            card.className = `card ${isUsed ? 'used' : ''}`;
+            card.id = `card-${item.id}`;
+
+            let shareHtml = navigator.share ? 
+                `<div class="share-btn" onclick="shareCode(event, '${item.code}', '${item.desc}')">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"></circle><circle cx="6" cy="12" r="3"></circle><circle cx="18" cy="19" r="3"></circle><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line></svg>
+                </div>` : '';
+
             card.innerHTML = `
-                <div class="card-info" onclick="copyCode('${item.code}', ${item.isUR})">
-                    <div class="code">${item.code}</div>
-                    <div style="margin:10px 0; font-size:12px; color:#666;">⏳ ${item.end} | ${item.label}</div>
-                    <div class="desc">${item.desc}</div>
+                <div class="card-info" onclick="copyCode('${item.code}', 'card-${item.id}')">
+                    <div class="card-top-row">
+                        <span class="code">${item.code}</span>
+                        ${shareHtml}
+                    </div>
+                    <div class="tag-row">
+                        <span class="tag tag-scope">${item.label}</span>
+                        <span class="tag tag-date">⏳ ${item.end ? item.end : '依官方規定'}</span>
+                    </div>
+                    <span class="desc">${item.desc}</span>
                 </div>
-                <button class="giant-btn" onclick="copyCode('${item.code}', ${item.isUR})">${isUsed ? '防護解除' : '一鍵駭入'}</button>
+                <button class="giant-btn" id="btn-${item.id}" onclick="copyCode('${item.code}', 'card-${item.id}')">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+                    <span>${isUsed ? '已領取' : '一鍵領取'}</span>
+                </button>
             `;
             container.appendChild(card);
         });
     }
 
-    function copyCode(code, isUR) {
-        if (isUR) playSound(1200, 'sawtooth', 0.5);
-        else playSound(1000, 'sine', 0.2);
+    window.filter = function(type) { renderList(type); }
+
+    // 原生分享
+    window.shareCode = function(e, code, desc) {
+        e.stopPropagation(); 
+        if (navigator.share) {
+            navigator.share({
+                title: '分享 Uber Eats 優惠碼',
+                text: `這組優惠碼給你用！\n代碼：【 ${code} 】\n內容：${desc}`,
+            }).catch(console.error);
+        }
+    }
+
+    // 複製並跳轉
+    function copyCode(code, cardId) {
+        const card = document.getElementById(cardId);
+        if (card.classList.contains('used')) return; 
 
         if (!usedCodes.includes(code)) {
             usedCodes.push(code);
-            localStorage.setItem('ue_used_codes', JSON.stringify(usedCodes));
+            try { localStorage.setItem('ue_used_codes', JSON.stringify(usedCodes)); } catch(e){}
+            updateStats();
         }
 
+        card.classList.add('used');
+        card.querySelector('.giant-btn span').innerText = `已領取`;
+        
         navigator.clipboard.writeText(code).then(() => {
-            const t = document.getElementById('toast');
-            t.classList.add('show');
+            showToast('✅ 代碼已複製，即將跳轉...');
             setTimeout(() => {
                 window.location.href = "ubereats://promotions";
-                t.classList.remove('show');
-                renderList(currentFilter);
+                if (isHideUsed) renderList(currentFilter); 
             }, 600);
         });
     }
 
-    function toggleSettings() {
-        isOldUser = document.getElementById('toggle-new-user').checked;
-        isHideUsed = document.getElementById('toggle-hide-used').checked;
-        localStorage.setItem('ue_is_old_user', isOldUser);
-        localStorage.setItem('ue_hide_used', isHideUsed);
-        document.getElementById('btn-filter-new').style.display = isOldUser ? 'none' : 'inline-block';
-        renderList(currentFilter);
-    }
-
+    // 重置記憶
     function resetMemory() {
-        if(confirm("格式化所有紀錄？")) {
-            usedCodes = [];
-            localStorage.removeItem('ue_used_codes');
-            renderList(currentFilter);
+        if (confirm("確定要清除所有已領取的紀錄嗎？")) {
+            usedCodes = []; 
+            try { localStorage.removeItem('ue_used_codes'); } catch(e){}
+            updateStats(); renderList(currentFilter); showToast('已重置紀錄');
         }
     }
 
-    window.onscroll = () => {
-        const fab = document.getElementById('fab-top');
-        if (window.scrollY > 300) fab.classList.add('visible');
-        else fab.classList.remove('visible');
-    };
+    // 提示框
+    function showToast(msg) {
+        const t = document.getElementById('toast');
+        t.innerText = msg; t.classList.add('show');
+        setTimeout(() => t.classList.remove('show'), 2000);
+    }
 </script>
+
 </body>
 </html>
+
