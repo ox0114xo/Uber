@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Uber Eats 優惠一覽</title>
+    <style>
+        :root { --primary: #06C167; --dark: #101010; --gray: #f2f2f2; --text-sub: #666; }
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: #fff; margin: 0; padding: 0; color: var(--dark); -webkit-tap-highlight-color: transparent; }
+        
+        /* === 頂部導航 === */
+        .header { position: sticky; top: 0; background: rgba(255,255,255,0.98); z-index: 100; border-bottom: 1px solid #eee; padding-bottom: 10px; }
+        
+        .title-bar { padding: 16px 20px; display: flex; justify-content: space-between; align-items: center; }
+        .title-bar h1 { margin: 0; font-size: 20px; font-weight: 800; letter-spacing: -0.5px; }
+        .counter { font-size: 12px; background: #eee; padding: 2px 8px; border-radius: 10px; color: #555; font-weight: bold; }
+
+        /* === 篩選按鈕列 === */
+        .filter-scroll { overflow-x: auto; white-space: nowrap; padding: 0 15px; -webkit-overflow-scrolling: touch; display: flex; gap: 8px; scrollbar-width: none; }
+        .filter-scroll::-webkit-scrollbar { display: none; }
+        
+        .filter-btn { 
+            border: 1px solid #ddd; background: #fff; color: #666; 
+            padding: 6px 14px; border-radius: 20px; font-size: 13px; font-weight: 600; 
+            transition: 0.2s; cursor: pointer; 
+        }
+        .filter-btn.active { background: var(--dark); color: white; border-color: var(--dark); }
+
+        /* === 列表容器 === */
+        .container { max-width: 600px; margin: 0 auto; padding: 16px; padding-bottom: 80px; }
+        
+        /* === 卡片設計 === */
+        .card { 
+            background: #fff; border: 1px solid #eee; border-radius: 12px; 
+            padding: 16px; margin-bottom: 12px; position: relative;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.03); transition: transform 0.1s; 
+        }
+        .card:active { transform: scale(0.98); background: #fafafa; }
+        .card.used { opacity: 0.5; filter: grayscale(1); }
+
+        /* 上半部：代碼與按鈕 */
+        .card-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+        .code { font-size: 18px; font-weight: 800; color: var(--dark); letter-spacing: 0.5px; font-family: monospace; }
+        .btn-copy { 
+            background: var(--primary); color: white; border: none; 
+            padding: 6px 14px; border-radius: 20px; font-size: 12px; font-weight: bold; 
+        }
+
+        /* 中間：標籤與說明 */
+        .card-mid { margin-bottom: 10px; }
+        .desc { font-size: 14px; color: #333; line-height: 1.4; display: block; margin-top: 4px; }
+        
+        /* 標籤系統 */
+        .badges { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 4px; }
+        .tag { font-size: 10px; padding: 2px 6px; border-radius: 4px; font-weight: bold; color: white; }
+        
+        /* 標籤配色 */
+        .tag.hot { background: #E74C3C; } /* 熱門/全用戶 */
+        .tag.vip { background: #8E44AD; } /* 會員 */
+        .tag.new { background: #F39C12; } /* 新戶 */
+        .tag.loc { background: #2980B9; } /* 地區 */
+        .tag.card { background: #27AE60; } /* 信用卡 */
+
+        /* 底部：日期 */
+        .card-btm { border-top: 1px solid #f0f0f0; padding-top: 8px; font-size: 11px; color: #999; display: flex; align-items: center; gap: 4px; }
+        .icon-date { font-size: 12px; }
+
+        /* === 狀態提示 === */
+        .loading { text-align: center; color: #999; padding: 40px; font-size: 13px; }
+        .toast { 
+            position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%) translateY(10px); 
+            background: rgba(0,0,0,0.85); color: white; padding: 10px 20px; border-radius: 30px; 
+            font-size: 13px; font-weight: bold; opacity: 0; transition: 0.3s; pointer-events: none; z-index: 999; 
+            display: flex; align-items: center; gap: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+        .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+    </style>
+</head>
+<body>
+
+<div class="header">
+    <div class="title-bar">
+        <h1>Uber Eats 優惠</h1>
+        <span class="counter" id="total-count">0</span>
+    </div>
+    <div class="filter-scroll">
+        <button class="filter-btn active" onclick="filter('all')">全部</button>
+        <button class="filter-btn" onclick="filter('hot')">全用戶</button>
+        <button class="filter-btn" onclick="filter('vip')">會員</button>
+        <button class="filter-btn" onclick="filter('new')">新戶</button>
+        <button class="filter-btn" onclick="filter('loc')">地區</button>
+        <button class="filter-btn" onclick="filter('card')">信用卡</button>
+    </div>
+</div>
+
+<div class="container" id="list">
+    <div class="loading">正在同步雲端優惠...</div>
+</div>
+
+<div id="toast" class="toast">✅ 已複製，正在開啟 App...</div>
+
+<script>
+    // ✅ 直接使用你提供的「發佈到網路」的 CSV 連結，免授權、最穩定！
+    const csvUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSQfG95R3C-8YZIhBsIJUOLckEq3MpPihSYVSszeOgx9jmdnXsyE9ag9NgBx4gbZOUg5-2-qxx7zQit/pub?output=csv';
+
+    let allData = []; // 儲存所有資料以便篩選
+
+    fetch(csvUrl)
+        .then(res => res.text())
+        .then(csvText => {
+            const rows = csvText.split('\n');
+            allData = []; // 重置資料庫
+
+            // 智能偵測欄位位移
+            let headerParts = rows[0].split(',');
+            let offset = (headerParts[0] && headerParts[0].toLowerCase().includes('code')) ? 0 : 1;
+
+            // 解析資料
+            for (let i = 1; i < rows.length; i++) {
+                let row = rows[i].trim();
+                if (!row) continue;
+                
+                // 簡易 CSV 切割
+                let cols = row.split(',');
+                if (cols.length < 2 + offset) continue;
+
+                const code = cols[0 + offset].trim();
+                const desc = cols[1 + offset].trim();
+                const type = cols[2 + offset] ? cols[2 + offset].trim() : 'hot'; // 分類代碼
+                const label = cols[3 + offset] ? cols[3 + offset].trim() : '通用'; //顯示標籤
+                const start = cols[4 + offset] ? cols[4 + offset].trim() : '';
+                const end   = cols[5 + offset] ? cols[5 + offset].trim() : '';
+
+                // 過濾標題列或無效資料
+                if (code.toLowerCase() === 'code' || code.includes('VALUE') || code.length < 2) continue;
+
+                allData.push({ id: i, code, desc, type, label, start, end });
+            }
+
+            // 初次渲染
+            renderList('all');
+        })
+        .catch(err => {
+            document.getElementById('list').innerHTML = `<div class="loading" style="color:#e74c3c">讀取失敗，請檢查網路連線</div>`;
+        });
+
+    // 渲染列表函數
+    function renderList(filterType) {
+        const container = document.getElementById('list');
+        container.innerHTML = '';
+        
+        // 切換按鈕狀態
+        document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
+        document.querySelector(`.filter-btn[onclick="filter('${filterType}')"]`).classList.add('active');
+
+        // 篩選資料
+        const filtered = filterType === 'all' 
+            ? allData 
+            : allData.filter(item => item.type === filterType);
+
+        document.getElementById('total-count').innerText = filtered.length;
+
+        if (filtered.length === 0) {
+            container.innerHTML = '<div class="loading">此分類目前無優惠</div>';
+            return;
+        }
+
+        filtered.forEach(item => {
+            // 處理日期顯示文字
+            let dateText = '';
+            if (item.start && item.end) dateText = `${item.start} - ${item.end}`;
+            else if (item.end) dateText = `期限至 ${item.end}`;
+            else dateText = '即日起有效';
+
+            const card = document.createElement('div');
+            card.className = 'card';
+            card.id = `card-${item.id}`;
+            card.onclick = () => copyCode(item.code, card.id);
+
+            card.innerHTML = `
+                <div class="card-top">
+                    <span class="code">${item.code}</span>
+                    <button class="btn-copy">領取</button>
+                </div>
+                <div class="card-mid">
+                    <div class="badges">
+                        <span class="tag ${item.type}">${item.label}</span>
+                    </div>
+                    <span class="desc">${item.desc}</span>
+                </div>
+                <div class="card-btm">
+                    <span class="icon-date">📅</span> ${dateText}
+                </div>
+            `;
+            container.appendChild(card);
+        });
+    }
+
+    // 篩選功能
+    window.filter = function(type) {
+        renderList(type);
+    }
+
+    // 複製功能
+    function copyCode(code, cardId) {
+        document.getElementById(cardId).classList.add('used');
+        navigator.clipboard.writeText(code).then(() => {
+            const t = document.getElementById('toast');
+            t.classList.add('show');
+            
+            // 延遲跳轉
+            setTimeout(() => {
+                window.location.href = "ubereats://promotions";
+                setTimeout(() => t.classList.remove('show'), 2000);
+            }, 400);
+        });
+    }
+</script>
+
+</body>
+</html>
+
