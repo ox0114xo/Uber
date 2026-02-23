@@ -3,75 +3,137 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Uber Eats 優惠一覽</title>
+    <title>Uber Eats 優惠終端 | Future Edition</title>
     <style>
-        :root { --primary: #06C167; --dark: #101010; --gray: #f2f2f2; --text-sub: #666; }
-        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: #fff; margin: 0; padding: 0; color: var(--dark); -webkit-tap-highlight-color: transparent; }
+        /* === 未來科技感配色 & 變數 === */
+        :root { 
+            --ue-green: #06C167; 
+            --ue-green-glow: rgba(6, 193, 103, 0.4);
+            --bg-dark: #0a0a0c; 
+            --card-bg: #141416;
+            --text-main: #ffffff;
+            --text-sub: #888890;
+            --border-color: #222226;
+        }
         
-        /* === 頂部導航 === */
-        .header { position: sticky; top: 0; background: rgba(255,255,255,0.98); z-index: 100; border-bottom: 1px solid #eee; padding-bottom: 10px; }
+        body { 
+            font-family: "SF Pro Display", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; 
+            background: var(--bg-dark); 
+            margin: 0; padding: 0; 
+            color: var(--text-main); 
+            -webkit-tap-highlight-color: transparent; 
+            letter-spacing: 0.5px;
+        }
         
-        .title-bar { padding: 16px 20px; display: flex; justify-content: space-between; align-items: center; }
-        .title-bar h1 { margin: 0; font-size: 20px; font-weight: 800; letter-spacing: -0.5px; }
-        .counter { font-size: 12px; background: #eee; padding: 2px 8px; border-radius: 10px; color: #555; font-weight: bold; }
+        /* === 頂部科幻導航列 === */
+        .header { 
+            position: sticky; top: 0; 
+            background: rgba(10, 10, 12, 0.85); 
+            backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+            z-index: 100; 
+            border-bottom: 1px solid var(--border-color); 
+            padding-bottom: 12px;
+        }
+        
+        .title-bar { 
+            padding: 16px 20px; display: flex; justify-content: space-between; align-items: center; 
+        }
+        .title-bar h1 { 
+            margin: 0; font-size: 22px; font-weight: 900; 
+            background: linear-gradient(90deg, #fff, var(--ue-green));
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+            text-transform: uppercase; letter-spacing: 1px;
+        }
+        .counter { 
+            font-size: 12px; background: rgba(6, 193, 103, 0.15); 
+            border: 1px solid var(--ue-green); color: var(--ue-green);
+            padding: 4px 10px; border-radius: 20px; font-weight: 900; 
+            box-shadow: 0 0 10px var(--ue-green-glow);
+        }
 
-        /* === 篩選按鈕列 === */
-        .filter-scroll { overflow-x: auto; white-space: nowrap; padding: 0 15px; -webkit-overflow-scrolling: touch; display: flex; gap: 8px; scrollbar-width: none; }
+        /* === 類神經網路篩選器 === */
+        .filter-scroll { 
+            overflow-x: auto; white-space: nowrap; padding: 0 20px; 
+            -webkit-overflow-scrolling: touch; display: flex; gap: 10px; scrollbar-width: none; 
+        }
         .filter-scroll::-webkit-scrollbar { display: none; }
         
         .filter-btn { 
-            border: 1px solid #ddd; background: #fff; color: #666; 
-            padding: 6px 14px; border-radius: 20px; font-size: 13px; font-weight: 600; 
-            transition: 0.2s; cursor: pointer; 
+            background: transparent; color: var(--text-sub); 
+            border: 1px solid var(--border-color);
+            padding: 8px 16px; border-radius: 20px; font-size: 14px; font-weight: 700; 
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); cursor: pointer; 
         }
-        .filter-btn.active { background: var(--dark); color: white; border-color: var(--dark); }
+        .filter-btn.active { 
+            background: rgba(6, 193, 103, 0.1); color: var(--ue-green); 
+            border-color: var(--ue-green); 
+            box-shadow: 0 0 15px var(--ue-green-glow) inset;
+        }
 
         /* === 列表容器 === */
-        .container { max-width: 600px; margin: 0 auto; padding: 16px; padding-bottom: 80px; }
+        .container { max-width: 600px; margin: 0 auto; padding: 20px; padding-bottom: 100px; }
         
-        /* === 卡片設計 === */
+        /* === 未來感卡片設計 === */
         .card { 
-            background: #fff; border: 1px solid #eee; border-radius: 12px; 
-            padding: 16px; margin-bottom: 12px; position: relative;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.03); transition: transform 0.1s; 
+            background: var(--card-bg); border: 1px solid var(--border-color); 
+            border-radius: 16px; margin-bottom: 16px; position: relative;
+            overflow: hidden; /* 讓內部按鈕圓角貼合 */
+            transition: transform 0.15s cubic-bezier(0.4, 0, 0.2, 1), border-color 0.3s; 
+            animation: slideUpFade 0.5s ease backwards;
         }
-        .card:active { transform: scale(0.98); background: #fafafa; }
-        .card.used { opacity: 0.5; filter: grayscale(1); }
-
-        /* 上半部：代碼與按鈕 */
-        .card-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
-        .code { font-size: 18px; font-weight: 800; color: var(--dark); letter-spacing: 0.5px; font-family: monospace; }
-        .btn-copy { 
-            background: var(--primary); color: white; border: none; 
-            padding: 6px 14px; border-radius: 20px; font-size: 12px; font-weight: bold; 
+        
+        /* 卡片進場動畫 */
+        @keyframes slideUpFade {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
         }
 
-        /* 中間：標籤與說明 */
-        .card-mid { margin-bottom: 10px; }
-        .desc { font-size: 14px; color: #333; line-height: 1.4; display: block; margin-top: 4px; }
-        
-        /* 標籤系統 */
-        .badges { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 4px; }
-        .tag { font-size: 10px; padding: 2px 6px; border-radius: 4px; font-weight: bold; color: white; }
-        
-        /* 標籤配色 */
-        .tag.hot { background: #E74C3C; } /* 熱門/全用戶 */
-        .tag.vip { background: #8E44AD; } /* 會員 */
-        .tag.new { background: #F39C12; } /* 新戶 */
-        .tag.loc { background: #2980B9; } /* 地區 */
-        .tag.card { background: #27AE60; } /* 信用卡 */
+        /* 點擊手感回饋 */
+        .card:active { transform: scale(0.96); border-color: var(--ue-green); }
+        .card.used { opacity: 0.4; filter: grayscale(0.8); pointer-events: none; }
 
-        /* 底部：日期 */
-        .card-btm { border-top: 1px solid #f0f0f0; padding-top: 8px; font-size: 11px; color: #999; display: flex; align-items: center; gap: 4px; }
-        .icon-date { font-size: 12px; }
+        /* 卡片資訊區 (上半部) */
+        .card-info { padding: 20px; }
+        
+        .card-top-row { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px; }
+        
+        .code-box { display: flex; flex-direction: column; }
+        .code { 
+            font-size: 26px; font-weight: 900; color: var(--ue-green); 
+            font-family: 'Courier New', Courier, monospace; letter-spacing: 1px;
+            text-shadow: 0 0 8px var(--ue-green-glow);
+        }
+        
+        /* 標籤設計 */
+        .tag-row { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 8px; }
+        .tag { 
+            font-size: 11px; padding: 4px 8px; border-radius: 6px; font-weight: 800; 
+            text-transform: uppercase; letter-spacing: 0.5px;
+        }
+        .tag-scope { background: #222; color: #fff; border: 1px solid #444; }
+        .tag-date { background: rgba(255, 69, 58, 0.15); color: #FF453A; border: 1px solid rgba(255, 69, 58, 0.3); }
 
+        .desc { font-size: 15px; color: #ccc; line-height: 1.5; font-weight: 500; }
+
+        /* === 巨型光劍按鈕 (下半部) === */
+        .giant-btn {
+            width: 100%; background: var(--ue-green); color: #000;
+            border: none; padding: 16px 0; font-size: 16px; font-weight: 900;
+            text-align: center; letter-spacing: 2px; cursor: pointer;
+            transition: background 0.2s;
+            display: flex; justify-content: center; align-items: center; gap: 8px;
+        }
+        
         /* === 狀態提示 === */
-        .loading { text-align: center; color: #999; padding: 40px; font-size: 13px; }
+        .loading { text-align: center; color: var(--ue-green); padding: 50px; font-size: 15px; font-weight: bold; letter-spacing: 1px; animation: pulse 1.5s infinite; }
+        @keyframes pulse { 0% { opacity: 0.5; } 50% { opacity: 1; } 100% { opacity: 0.5; } }
+
         .toast { 
-            position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%) translateY(10px); 
-            background: rgba(0,0,0,0.85); color: white; padding: 10px 20px; border-radius: 30px; 
-            font-size: 13px; font-weight: bold; opacity: 0; transition: 0.3s; pointer-events: none; z-index: 999; 
-            display: flex; align-items: center; gap: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            position: fixed; bottom: 40px; left: 50%; transform: translateX(-50%) translateY(20px); 
+            background: var(--ue-green); color: #000; padding: 14px 28px; border-radius: 30px; 
+            font-size: 15px; font-weight: 900; opacity: 0; transition: 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55); 
+            pointer-events: none; z-index: 999; box-shadow: 0 10px 30px var(--ue-green-glow);
+            letter-spacing: 1px;
         }
         .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
     </style>
@@ -80,135 +142,132 @@
 
 <div class="header">
     <div class="title-bar">
-        <h1>Uber Eats 優惠</h1>
+        <h1>UBER EATS PRO</h1>
         <span class="counter" id="total-count">0</span>
     </div>
     <div class="filter-scroll">
-        <button class="filter-btn active" onclick="filter('all')">全部</button>
-        <button class="filter-btn" onclick="filter('hot')">全用戶</button>
-        <button class="filter-btn" onclick="filter('vip')">會員</button>
-        <button class="filter-btn" onclick="filter('new')">新戶</button>
-        <button class="filter-btn" onclick="filter('loc')">地區</button>
-        <button class="filter-btn" onclick="filter('card')">信用卡</button>
+        <button class="filter-btn active" onclick="filter('all')">全終端</button>
+        <button class="filter-btn" onclick="filter('hot')">一般優惠</button>
+        <button class="filter-btn" onclick="filter('vip')">會員專屬</button>
+        <button class="filter-btn" onclick="filter('new')">新進連線</button>
+        <button class="filter-btn" onclick="filter('card')">金融卡</button>
     </div>
 </div>
 
 <div class="container" id="list">
-    <div class="loading">正在同步雲端優惠...</div>
+    <div class="loading">［ 正在連接雲端資料庫... ］</div>
 </div>
 
-<div id="toast" class="toast">✅ 已複製，正在開啟 App...</div>
+<div id="toast" class="toast">⚡ 代碼擷取成功，啟動 App...</div>
 
 <script>
-    // ✅ 直接使用你提供的「發佈到網路」的 CSV 連結，免授權、最穩定！
+    // ✅ 你的專屬試算表連結
     const csvUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSQfG95R3C-8YZIhBsIJUOLckEq3MpPihSYVSszeOgx9jmdnXsyE9ag9NgBx4gbZOUg5-2-qxx7zQit/pub?output=csv';
 
-    let allData = []; // 儲存所有資料以便篩選
+    let allData = [];
 
     fetch(csvUrl)
         .then(res => res.text())
         .then(csvText => {
-            const rows = csvText.split('\n');
-            allData = []; // 重置資料庫
+            // 清理可能出現的 \r 換行符號
+            const rows = csvText.replace(/\r/g, '').split('\n');
+            allData = [];
 
-            // 智能偵測欄位位移
-            let headerParts = rows[0].split(',');
-            let offset = (headerParts[0] && headerParts[0].toLowerCase().includes('code')) ? 0 : 1;
-
-            // 解析資料
+            // 從第 1 行開始讀取 (跳過標題列：有效期限,適用範圍,優惠內容,優惠碼)
             for (let i = 1; i < rows.length; i++) {
                 let row = rows[i].trim();
                 if (!row) continue;
                 
-                // 簡易 CSV 切割
                 let cols = row.split(',');
-                if (cols.length < 2 + offset) continue;
+                if (cols.length < 4) continue;
 
-                const code = cols[0 + offset].trim();
-                const desc = cols[1 + offset].trim();
-                const type = cols[2 + offset] ? cols[2 + offset].trim() : 'hot'; // 分類代碼
-                const label = cols[3 + offset] ? cols[3 + offset].trim() : '通用'; //顯示標籤
-                const start = cols[4 + offset] ? cols[4 + offset].trim() : '';
-                const end   = cols[5 + offset] ? cols[5 + offset].trim() : '';
+                // 根據你的新規則對應欄位
+                const end = cols[0].trim();   // 有效期限
+                const label = cols[1].trim(); // 適用範圍
+                const desc = cols[2].trim();  // 優惠內容
+                const code = cols[3].trim();  // 優惠碼
 
-                // 過濾標題列或無效資料
-                if (code.toLowerCase() === 'code' || code.includes('VALUE') || code.length < 2) continue;
+                if (!code || code.toLowerCase() === '優惠碼') continue;
 
-                allData.push({ id: i, code, desc, type, label, start, end });
+                // 🤖 智能分類器：自動根據「適用範圍」判斷該去哪個篩選分類
+                let type = 'hot';
+                if (label.includes('新')) type = 'new';
+                else if (label.includes('會員') || label.includes('優市') || label.includes('自取')) type = 'vip';
+                else if (label.includes('卡') || label.includes('台新') || label.includes('中信') || label.includes('國泰')) type = 'card';
+
+                allData.push({ id: i, code, desc, type, label, end });
             }
 
-            // 初次渲染
             renderList('all');
         })
         .catch(err => {
-            document.getElementById('list').innerHTML = `<div class="loading" style="color:#e74c3c">讀取失敗，請檢查網路連線</div>`;
+            document.getElementById('list').innerHTML = `<div class="loading" style="color:#FF453A">［ 連線失敗，請檢查網路狀態 ］</div>`;
         });
 
-    // 渲染列表函數
     function renderList(filterType) {
         const container = document.getElementById('list');
         container.innerHTML = '';
         
-        // 切換按鈕狀態
         document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
         document.querySelector(`.filter-btn[onclick="filter('${filterType}')"]`).classList.add('active');
 
-        // 篩選資料
-        const filtered = filterType === 'all' 
-            ? allData 
-            : allData.filter(item => item.type === filterType);
-
-        document.getElementById('total-count').innerText = filtered.length;
+        const filtered = filterType === 'all' ? allData : allData.filter(item => item.type === filterType);
+        document.getElementById('total-count').innerText = filtered.length + ' 組可用';
 
         if (filtered.length === 0) {
-            container.innerHTML = '<div class="loading">此分類目前無優惠</div>';
+            container.innerHTML = '<div class="loading">［ 查無相符資料 ］</div>';
             return;
         }
 
-        filtered.forEach(item => {
-            // 處理日期顯示文字
-            let dateText = '';
-            if (item.start && item.end) dateText = `${item.start} - ${item.end}`;
-            else if (item.end) dateText = `期限至 ${item.end}`;
-            else dateText = '即日起有效';
+        filtered.forEach((item, index) => {
+            let dateText = item.end ? `期限: ${item.end}` : '即日起生效';
 
             const card = document.createElement('div');
             card.className = 'card';
             card.id = `card-${item.id}`;
+            // 讓卡片產生依序出現的動態感
+            card.style.animationDelay = `${index * 0.05}s`; 
+
+            // 將整個卡片設為點擊觸發區
             card.onclick = () => copyCode(item.code, card.id);
 
             card.innerHTML = `
-                <div class="card-top">
-                    <span class="code">${item.code}</span>
-                    <button class="btn-copy">領取</button>
-                </div>
-                <div class="card-mid">
-                    <div class="badges">
-                        <span class="tag ${item.type}">${item.label}</span>
+                <div class="card-info">
+                    <div class="card-top-row">
+                        <div class="code-box">
+                            <span class="code">${item.code}</span>
+                        </div>
+                    </div>
+                    <div class="tag-row">
+                        <span class="tag tag-scope">${item.label}</span>
+                        <span class="tag tag-date">⏳ ${dateText}</span>
                     </div>
                     <span class="desc">${item.desc}</span>
                 </div>
-                <div class="card-btm">
-                    <span class="icon-date">📅</span> ${dateText}
-                </div>
+                <button class="giant-btn">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+                    一鍵領取
+                </button>
             `;
             container.appendChild(card);
         });
     }
 
-    // 篩選功能
-    window.filter = function(type) {
-        renderList(type);
-    }
+    window.filter = function(type) { renderList(type); }
 
-    // 複製功能
     function copyCode(code, cardId) {
+        // 給予視覺上的已使用反饋
         document.getElementById(cardId).classList.add('used');
+        
         navigator.clipboard.writeText(code).then(() => {
+            // 彈出帶有科幻感的通知
             const t = document.getElementById('toast');
             t.classList.add('show');
             
-            // 延遲跳轉
+            // 讓手機微微震動一下 (如果是 Android 裝置支援的話，大幅提升手感)
+            if (navigator.vibrate) navigator.vibrate(50);
+            
+            // 延遲跳轉 App
             setTimeout(() => {
                 window.location.href = "ubereats://promotions";
                 setTimeout(() => t.classList.remove('show'), 2000);
@@ -219,4 +278,3 @@
 
 </body>
 </html>
-
