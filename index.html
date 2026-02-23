@@ -1,163 +1,154 @@
-</body>
-</html>
 <!DOCTYPE html>
 <html lang="zh-TW">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Uber Eats 優惠終端 | Memory Edition</title>
+    <title>Uber Eats 優惠終端 | Ultimate Edition</title>
     <style>
         /* === 未來科技感配色 & 變數 === */
         :root { 
-            --ue-green: #06C167; 
-            --ue-green-glow: rgba(6, 193, 103, 0.4);
-            --bg-dark: #0a0a0c; 
-            --card-bg: #141416;
-            --text-main: #ffffff;
-            --text-sub: #888890;
-            --border-color: #222226;
-            --danger: #FF453A;
+            --ue-green: #06C167; --ue-green-glow: rgba(6, 193, 103, 0.4);
+            --bg-dark: #0a0a0c; --card-bg: #141416;
+            --text-main: #ffffff; --text-sub: #888890;
+            --border-color: #222226; --danger: #FF453A;
         }
         
         body { 
             font-family: "SF Pro Display", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; 
-            background: var(--bg-dark); 
-            margin: 0; padding: 0; 
-            color: var(--text-main); 
-            -webkit-tap-highlight-color: transparent; 
-            letter-spacing: 0.5px;
+            background: var(--bg-dark); margin: 0; padding: 0; color: var(--text-main); 
+            -webkit-tap-highlight-color: transparent; letter-spacing: 0.5px;
         }
         
         /* === 頂部科幻導航列 === */
         .header { 
-            position: sticky; top: 0; 
-            background: rgba(10, 10, 12, 0.85); 
+            position: sticky; top: 0; background: rgba(10, 10, 12, 0.85); 
             backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
-            z-index: 100; 
-            border-bottom: 1px solid var(--border-color); 
-            padding-bottom: 12px;
+            z-index: 100; border-bottom: 1px solid var(--border-color); padding-bottom: 12px;
         }
         
-        .title-bar { padding: 16px 20px 10px; display: flex; justify-content: space-between; align-items: center; }
+        .title-bar { padding: 16px 20px 5px; display: flex; justify-content: space-between; align-items: center; }
         .title-bar h1 { 
-            margin: 0; font-size: 22px; font-weight: 900; 
+            margin: 0; font-size: 24px; font-weight: 900; 
             background: linear-gradient(90deg, #fff, var(--ue-green));
             -webkit-background-clip: text; -webkit-text-fill-color: transparent;
             text-transform: uppercase; letter-spacing: 1px;
         }
-        .counter { 
-            font-size: 12px; background: rgba(6, 193, 103, 0.15); 
-            border: 1px solid var(--ue-green); color: var(--ue-green);
-            padding: 4px 10px; border-radius: 20px; font-weight: 900; 
-            box-shadow: 0 0 10px var(--ue-green-glow);
+        
+        /* 戰績面板 */
+        .stats-badge {
+            font-size: 11px; background: #1a1a1c; border: 1px solid #333;
+            color: var(--text-sub); padding: 4px 10px; border-radius: 6px; font-weight: 800;
+            display: flex; gap: 6px; align-items: center;
         }
+        .stats-badge span { color: var(--ue-green); font-size: 13px; text-shadow: 0 0 5px var(--ue-green-glow); }
 
-        /* === 新舊用戶切換開關 (Cyberpunk Style) === */
-        .settings-bar {
-            padding: 0 20px 12px;
-            display: flex; align-items: center; gap: 10px;
+        /* === 駭客搜索列 === */
+        .search-container { padding: 10px 20px; }
+        .search-box {
+            width: 100%; box-sizing: border-box; background: #000; border: 1px solid #333;
+            color: var(--ue-green); padding: 12px 16px; border-radius: 8px; font-size: 14px;
+            font-family: 'Courier New', Courier, monospace; outline: none; transition: 0.3s;
         }
-        .switch {
-            position: relative; display: inline-block; width: 44px; height: 24px;
-        }
+        .search-box:focus { border-color: var(--ue-green); box-shadow: 0 0 10px var(--ue-green-glow) inset; }
+        .search-box::placeholder { color: #444; }
+
+        /* === 控制台 (開關區) === */
+        .control-panel { padding: 0 20px 10px; display: flex; flex-direction: column; gap: 12px; }
+        .toggle-row { display: flex; align-items: center; justify-content: space-between; }
+        .toggle-group { display: flex; align-items: center; gap: 10px; }
+        
+        /* 開關元件 */
+        .switch { position: relative; display: inline-block; width: 40px; height: 22px; }
         .switch input { opacity: 0; width: 0; height: 0; }
         .slider {
             position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0;
-            background-color: #333; transition: .4s; border-radius: 34px;
-            border: 1px solid #555;
+            background-color: #333; transition: .4s; border-radius: 34px; border: 1px solid #555;
         }
         .slider:before {
-            position: absolute; content: ""; height: 16px; width: 16px; left: 3px; bottom: 3px;
+            position: absolute; content: ""; height: 14px; width: 14px; left: 3px; bottom: 3px;
             background-color: white; transition: .4s; border-radius: 50%;
         }
-        input:checked + .slider { background-color: var(--ue-green); border-color: var(--ue-green); box-shadow: 0 0 10px var(--ue-green-glow); }
-        input:checked + .slider:before { transform: translateX(20px); }
-        .settings-text { font-size: 13px; color: var(--text-sub); font-weight: 600; }
+        input:checked + .slider { background-color: var(--ue-green); border-color: var(--ue-green); }
+        input:checked + .slider:before { transform: translateX(18px); }
+        .settings-text { font-size: 12px; color: var(--text-sub); font-weight: 600; }
 
-        /* === 類神經網路篩選器 === */
+        /* === 分類按鈕 === */
         .filter-scroll { 
-            overflow-x: auto; white-space: nowrap; padding: 0 20px; 
-            -webkit-overflow-scrolling: touch; display: flex; gap: 10px; scrollbar-width: none; 
+            overflow-x: auto; white-space: nowrap; padding: 5px 20px; 
+            -webkit-overflow-scrolling: touch; display: flex; gap: 8px; scrollbar-width: none; 
         }
         .filter-scroll::-webkit-scrollbar { display: none; }
-        
         .filter-btn { 
-            background: transparent; color: var(--text-sub); 
-            border: 1px solid var(--border-color);
-            padding: 8px 16px; border-radius: 20px; font-size: 14px; font-weight: 700; 
+            background: #111; color: var(--text-sub); border: 1px solid #333;
+            padding: 6px 14px; border-radius: 20px; font-size: 13px; font-weight: 700; 
             transition: all 0.3s; cursor: pointer; 
         }
         .filter-btn.active { 
-            background: rgba(6, 193, 103, 0.1); color: var(--ue-green); 
-            border-color: var(--ue-green); 
-            box-shadow: 0 0 15px var(--ue-green-glow) inset;
+            background: rgba(6, 193, 103, 0.1); color: var(--ue-green); border-color: var(--ue-green); 
         }
 
         /* === 列表容器 === */
-        .container { max-width: 600px; margin: 0 auto; padding: 20px; padding-bottom: 40px; }
+        .container { max-width: 600px; margin: 0 auto; padding: 15px 20px 40px; }
         
-        /* === 未來感卡片設計 === */
+        /* === 卡片設計 === */
         .card { 
             background: var(--card-bg); border: 1px solid var(--border-color); 
-            border-radius: 16px; margin-bottom: 16px; position: relative;
-            overflow: hidden; 
-            transition: transform 0.15s, border-color 0.3s, opacity 0.3s, filter 0.3s; 
-            animation: slideUpFade 0.5s ease backwards;
+            border-radius: 12px; margin-bottom: 16px; position: relative; overflow: hidden; 
+            transition: 0.3s cubic-bezier(0.2, 0.8, 0.2, 1); animation: slideUp 0.4s ease backwards;
         }
-        @keyframes slideUpFade {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-        .card:active { transform: scale(0.96); border-color: var(--ue-green); }
+        @keyframes slideUp { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
         
-        /* 被記憶標記為「已使用」的狀態 */
-        .card.used { opacity: 0.35; filter: grayscale(1); border-color: #222; }
-        .card.used .giant-btn { background: #333; color: #888; }
-
-        .card-info { padding: 20px; }
-        .card-top-row { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px; }
-        .code { 
-            font-size: 26px; font-weight: 900; color: var(--ue-green); 
-            font-family: 'Courier New', Courier, monospace; letter-spacing: 1px;
-            text-shadow: 0 0 8px var(--ue-green-glow);
+        /* 故障駭入特效 (Glitch) */
+        .glitch-anim { animation: glitch 0.3s cubic-bezier(.25, .46, .45, .94) both infinite; border-color: var(--ue-green); }
+        @keyframes glitch {
+            0% { transform: translate(0) }
+            20% { transform: translate(-2px, 2px) }
+            40% { transform: translate(-2px, -2px) }
+            60% { transform: translate(2px, 2px) }
+            80% { transform: translate(2px, -2px) }
+            100% { transform: translate(0) }
         }
+
+        .card.used { opacity: 0.4; filter: grayscale(1); border-color: #222; }
+        .card.used .giant-btn { background: #222; color: #666; }
+
+        .card-info { padding: 16px; }
+        .card-top-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+        .code { font-size: 24px; font-weight: 900; color: var(--ue-green); font-family: 'Courier New', monospace; text-shadow: 0 0 8px var(--ue-green-glow); }
         
-        .tag-row { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 8px; }
-        .tag { font-size: 11px; padding: 4px 8px; border-radius: 6px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px; }
-        .tag-scope { background: #222; color: #fff; border: 1px solid #444; }
-        .tag-date { background: rgba(255, 69, 58, 0.15); color: var(--danger); border: 1px solid rgba(255, 69, 58, 0.3); }
+        /* 傳輸分享按鈕 */
+        .share-btn {
+            background: #222; border: 1px solid #444; color: #fff; border-radius: 50%; width: 32px; height: 32px;
+            display: flex; justify-content: center; align-items: center; cursor: pointer; transition: 0.2s;
+        }
+        .share-btn:active { background: var(--ue-green); color: #000; border-color: var(--ue-green); transform: scale(0.9); }
 
-        .desc { font-size: 15px; color: #ccc; line-height: 1.5; font-weight: 500; }
+        .tag-row { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 8px; }
+        .tag { font-size: 10px; padding: 4px 6px; border-radius: 4px; font-weight: 800; }
+        .tag-scope { background: #222; color: #fff; }
+        .tag-date { background: rgba(255, 69, 58, 0.15); color: var(--danger); }
 
-        /* 巨型光劍按鈕 */
+        .desc { font-size: 14px; color: #ccc; line-height: 1.5; font-weight: 500; }
+
         .giant-btn {
-            width: 100%; background: var(--ue-green); color: #000;
-            border: none; padding: 16px 0; font-size: 16px; font-weight: 900;
-            text-align: center; letter-spacing: 2px; cursor: pointer;
-            transition: background 0.2s, color 0.2s;
+            width: 100%; background: var(--ue-green); color: #000; border: none; padding: 14px 0; font-size: 15px; font-weight: 900;
+            text-align: center; letter-spacing: 2px; cursor: pointer; transition: 0.2s;
             display: flex; justify-content: center; align-items: center; gap: 8px;
         }
         
-        /* === 底部清除記憶按鈕 === */
         .reset-btn {
-            display: flex; justify-content: center; align-items: center; gap: 8px;
-            width: 100%; background: transparent; color: var(--text-sub);
-            border: 1px dashed #444; padding: 16px 0; border-radius: 12px;
-            font-size: 14px; font-weight: 700; cursor: pointer; margin-top: 30px;
-            transition: 0.3s;
+            display: flex; justify-content: center; align-items: center; gap: 8px; width: 100%; background: transparent; color: #666;
+            border: 1px dashed #444; padding: 14px 0; border-radius: 8px; font-size: 13px; font-weight: 700; cursor: pointer; margin-top: 30px; transition: 0.3s;
         }
         .reset-btn:active { background: rgba(255, 69, 58, 0.1); border-color: var(--danger); color: var(--danger); }
 
-        /* === 狀態提示 === */
-        .loading { text-align: center; color: var(--ue-green); padding: 50px; font-size: 15px; font-weight: bold; letter-spacing: 1px; animation: pulse 1.5s infinite; }
-        @keyframes pulse { 0% { opacity: 0.5; } 50% { opacity: 1; } 100% { opacity: 0.5; } }
+        .loading { text-align: center; color: var(--ue-green); padding: 50px; font-size: 14px; font-weight: bold; letter-spacing: 1px; animation: pulse 1.5s infinite; }
+        @keyframes pulse { 0% { opacity: 0.3; } 50% { opacity: 1; } 100% { opacity: 0.3; } }
 
         .toast { 
             position: fixed; bottom: 40px; left: 50%; transform: translateX(-50%) translateY(20px); 
-            background: var(--ue-green); color: #000; padding: 14px 28px; border-radius: 30px; 
-            font-size: 15px; font-weight: 900; opacity: 0; transition: 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55); 
-            pointer-events: none; z-index: 999; box-shadow: 0 10px 30px var(--ue-green-glow);
-            letter-spacing: 1px; white-space: nowrap;
+            background: var(--ue-green); color: #000; padding: 12px 24px; border-radius: 30px; 
+            font-size: 14px; font-weight: 900; opacity: 0; transition: 0.4s; pointer-events: none; z-index: 999; box-shadow: 0 10px 30px var(--ue-green-glow); white-space: nowrap;
         }
         .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
     </style>
@@ -167,87 +158,101 @@
 <div class="header">
     <div class="title-bar">
         <h1>UBER EATS PRO</h1>
-        <span class="counter" id="total-count">0</span>
+        <div class="stats-badge">已破解 <span id="stats-count">0</span> 組</div>
     </div>
     
-    <div class="settings-bar">
-        <label class="switch">
-            <input type="checkbox" id="toggle-new-user" onchange="toggleUserStatus()">
-            <span class="slider"></span>
-        </label>
-        <span class="settings-text" id="toggle-text">我已不是新戶 (隱藏新戶優惠)</span>
+    <div class="search-container">
+        <input type="text" id="search-input" class="search-box" placeholder="> 輸入關鍵字搜索 (如: 星巴克, 免運)..." onkeyup="handleSearch()">
+    </div>
+
+    <div class="control-panel">
+        <div class="toggle-row">
+            <div class="toggle-group">
+                <label class="switch"><input type="checkbox" id="toggle-new-user" onchange="toggleSettings()"><span class="slider"></span></label>
+                <span class="settings-text" id="text-new-user">隱藏新戶優惠</span>
+            </div>
+            <div class="toggle-group">
+                <label class="switch"><input type="checkbox" id="toggle-hide-used" onchange="toggleSettings()"><span class="slider"></span></label>
+                <span class="settings-text" id="text-hide-used">隱藏已領取</span>
+            </div>
+        </div>
     </div>
 
     <div class="filter-scroll">
-        <button class="filter-btn active" onclick="filter('all')">全終端</button>
-        <button class="filter-btn" onclick="filter('hot')">一般優惠</button>
-        <button class="filter-btn" onclick="filter('vip')">會員專屬</button>
-        <button class="filter-btn" onclick="filter('new')">新進連線</button>
-        <button class="filter-btn" onclick="filter('card')">金融卡</button>
+        <button class="filter-btn active" onclick="filter('all')">全終端 (<span id="count-all">0</span>)</button>
+        <button class="filter-btn" onclick="filter('hot')">一般</button>
+        <button class="filter-btn" onclick="filter('vip')">會員</button>
+        <button class="filter-btn" onclick="filter('new')">新戶</button>
+        <button class="filter-btn" onclick="filter('card')">信用卡</button>
     </div>
 </div>
 
 <div class="container">
-    <div id="list">
-        <div class="loading">［ 正在連接雲端資料庫... ］</div>
-    </div>
-    
-    <button class="reset-btn" onclick="resetMemory()" id="reset-btn" style="display: none;">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path><path d="M3 3v5h5"></path></svg>
-        清除終端快取 (重置領取紀錄)
-    </button>
+    <div id="list"><div class="loading">［ 正在連接雲端資料庫... ］</div></div>
+    <button class="reset-btn" onclick="resetMemory()" id="reset-btn" style="display: none;">清除終端記憶 (重置領取紀錄)</button>
 </div>
 
-<div id="toast" class="toast">⚡ 代碼擷取成功，啟動 App...</div>
+<div id="toast" class="toast">⚡ 代碼複製成功</div>
 
 <script>
     const csvUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSQfG95R3C-8YZIhBsIJUOLckEq3MpPihSYVSszeOgx9jmdnXsyE9ag9NgBx4gbZOUg5-2-qxx7zQit/pub?output=csv';
     
     let allData = [];
     let currentFilter = 'all';
+    let searchQuery = '';
 
-    // 讀取本地記憶 (LocalStorage)
+    // 讀取記憶
     let usedCodes = JSON.parse(localStorage.getItem('ue_used_codes')) || [];
     let isOldUser = localStorage.getItem('ue_is_old_user') === 'true';
+    let isHideUsed = localStorage.getItem('ue_hide_used') === 'true';
 
-    // 初始化開關狀態
+    // 初始化介面
     document.getElementById('toggle-new-user').checked = isOldUser;
-    updateToggleText();
+    document.getElementById('toggle-hide-used').checked = isHideUsed;
+    updateStats();
 
-    fetch(csvUrl)
-        .then(res => res.text())
-        .then(csvText => {
-            const rows = csvText.replace(/\r/g, '').split('\n');
-            allData = [];
+    fetch(csvUrl).then(res => res.text()).then(csvText => {
+        const rows = csvText.replace(/\r/g, '').split('\n');
+        allData = [];
+        for (let i = 1; i < rows.length; i++) {
+            let row = rows[i].trim();
+            if (!row) continue;
+            let cols = row.split(',');
+            if (cols.length < 4) continue;
+            
+            const end = cols[0].trim(), label = cols[1].trim(), desc = cols[2].trim(), code = cols[3].trim();
+            if (!code || code.toLowerCase() === '優惠碼') continue;
 
-            for (let i = 1; i < rows.length; i++) {
-                let row = rows[i].trim();
-                if (!row) continue;
-                
-                let cols = row.split(',');
-                if (cols.length < 4) continue;
+            let type = 'hot';
+            if (label.includes('新')) type = 'new';
+            else if (label.includes('會員') || label.includes('優市') || label.includes('自取')) type = 'vip';
+            else if (label.includes('卡') || label.includes('台新') || label.includes('中信') || label.includes('國泰')) type = 'card';
 
-                const end = cols[0].trim();
-                const label = cols[1].trim();
-                const desc = cols[2].trim();
-                const code = cols[3].trim();
+            allData.push({ id: i, code, desc, type, label, end });
+        }
+        document.getElementById('reset-btn').style.display = 'flex';
+        renderList(currentFilter);
+    }).catch(() => {
+        document.getElementById('list').innerHTML = `<div class="loading" style="color:#FF453A">［ 連線失敗 ］</div>`;
+    });
 
-                if (!code || code.toLowerCase() === '優惠碼') continue;
+    function handleSearch() {
+        searchQuery = document.getElementById('search-input').value.toLowerCase();
+        renderList(currentFilter);
+    }
 
-                let type = 'hot';
-                if (label.includes('新')) type = 'new';
-                else if (label.includes('會員') || label.includes('優市') || label.includes('自取')) type = 'vip';
-                else if (label.includes('卡') || label.includes('台新') || label.includes('中信') || label.includes('國泰') || label.includes('富邦')) type = 'card';
+    function toggleSettings() {
+        isOldUser = document.getElementById('toggle-new-user').checked;
+        isHideUsed = document.getElementById('toggle-hide-used').checked;
+        localStorage.setItem('ue_is_old_user', isOldUser);
+        localStorage.setItem('ue_hide_used', isHideUsed);
+        if (navigator.vibrate) navigator.vibrate(20);
+        renderList(currentFilter);
+    }
 
-                allData.push({ id: i, code, desc, type, label, end });
-            }
-
-            document.getElementById('reset-btn').style.display = 'flex'; // 顯示重置按鈕
-            renderList(currentFilter);
-        })
-        .catch(err => {
-            document.getElementById('list').innerHTML = `<div class="loading" style="color:#FF453A">［ 連線失敗，請檢查網路狀態 ］</div>`;
-        });
+    function updateStats() {
+        document.getElementById('stats-count').innerText = usedCodes.length;
+    }
 
     function renderList(filterType) {
         currentFilter = filterType;
@@ -257,49 +262,58 @@
         document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
         document.querySelector(`.filter-btn[onclick="filter('${filterType}')"]`).classList.add('active');
 
-        // 邏輯：如果打勾了「已不是新戶」，把 type === 'new' 的資料直接從基本清單中剔除
-        let baseData = allData;
-        if (isOldUser) {
-            baseData = baseData.filter(item => item.type !== 'new');
+        // 1. 基本過濾 (新戶開關 & 隱藏已使用)
+        let processedData = allData;
+        if (isOldUser) processedData = processedData.filter(item => item.type !== 'new');
+        if (isHideUsed) processedData = processedData.filter(item => !usedCodes.includes(item.code));
+
+        // 2. 關鍵字搜索
+        if (searchQuery) {
+            processedData = processedData.filter(item => 
+                item.desc.toLowerCase().includes(searchQuery) || 
+                item.code.toLowerCase().includes(searchQuery) || 
+                item.label.toLowerCase().includes(searchQuery)
+            );
         }
 
-        const filtered = filterType === 'all' ? baseData : baseData.filter(item => item.type === filterType);
-        document.getElementById('total-count').innerText = filtered.length + ' 組可用';
+        // 3. 分類按鈕
+        const finalData = filterType === 'all' ? processedData : processedData.filter(item => item.type === filterType);
+        
+        document.getElementById('count-all').innerText = processedData.length;
 
-        if (filtered.length === 0) {
-            container.innerHTML = '<div class="loading">［ 此區域目前無相符資料 ］</div>';
+        if (finalData.length === 0) {
+            container.innerHTML = '<div class="loading">［ 查無相符代碼 ］</div>';
             return;
         }
 
-        filtered.forEach((item, index) => {
-            let dateText = item.end ? `期限: ${item.end}` : '即日起生效';
-            
-            // 判斷是否在記憶中(已經點選過)
+        finalData.forEach((item, index) => {
             let isUsed = usedCodes.includes(item.code);
-
             const card = document.createElement('div');
             card.className = `card ${isUsed ? 'used' : ''}`;
             card.id = `card-${item.id}`;
-            card.style.animationDelay = `${index * 0.04}s`; 
+            card.style.animationDelay = `${index * 0.03}s`; 
 
-            card.onclick = () => copyCode(item.code, card.id);
+            // 分享按鈕 (防止觸發卡片點擊)
+            let shareHtml = navigator.share ? 
+                `<div class="share-btn" onclick="shareCode(event, '${item.code}', '${item.desc}')">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="18" cy="5" r="3"></circle><circle cx="6" cy="12" r="3"></circle><circle cx="18" cy="19" r="3"></circle><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line></svg>
+                </div>` : '';
 
             card.innerHTML = `
-                <div class="card-info">
+                <div class="card-info" onclick="copyCode('${item.code}', 'card-${item.id}')">
                     <div class="card-top-row">
-                        <div class="code-box">
-                            <span class="code">${item.code}</span>
-                        </div>
+                        <span class="code">${item.code}</span>
+                        ${shareHtml}
                     </div>
                     <div class="tag-row">
                         <span class="tag tag-scope">${item.label}</span>
-                        <span class="tag tag-date">⏳ ${dateText}</span>
+                        <span class="tag tag-date">⏳ ${item.end ? item.end : '即日起'}</span>
                     </div>
                     <span class="desc">${item.desc}</span>
                 </div>
-                <button class="giant-btn">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
-                    ${isUsed ? '已領取' : '一鍵領取'}
+                <button class="giant-btn" onclick="copyCode('${item.code}', 'card-${item.id}')">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+                    ${isUsed ? '已領取' : '一鍵破解'}
                 </button>
             `;
             container.appendChild(card);
@@ -308,69 +322,58 @@
 
     window.filter = function(type) { renderList(type); }
 
-    // 開關切換事件
-    function toggleUserStatus() {
-        isOldUser = document.getElementById('toggle-new-user').checked;
-        localStorage.setItem('ue_is_old_user', isOldUser); // 記憶開關狀態
-        updateToggleText();
-        renderList(currentFilter); // 重新渲染畫面
-        
-        if (navigator.vibrate) navigator.vibrate(30); // 開關小震動
-    }
-
-    function updateToggleText() {
-        const textEl = document.getElementById('toggle-text');
-        if (isOldUser) {
-            textEl.style.color = 'var(--ue-green)';
-            textEl.innerText = '［ 新戶專屬優惠已隱藏 ］';
-        } else {
-            textEl.style.color = 'var(--text-sub)';
-            textEl.innerText = '我已不是新戶 (隱藏新戶優惠)';
+    // 隱密傳輸 (Web Share API)
+    window.shareCode = function(e, code, desc) {
+        e.stopPropagation(); // 防止觸發外層的複製
+        if (navigator.share) {
+            navigator.share({
+                title: '送你 Uber Eats 專屬優惠',
+                text: `這組序號借你用！\n代碼：【 ${code} 】\n內容：${desc}`,
+            }).catch(console.error);
         }
     }
 
     function copyCode(code, cardId) {
-        // 寫入記憶緩存
+        const card = document.getElementById(cardId);
+        
+        // 加入 Glitch 特效
+        card.classList.add('glitch-anim');
+        setTimeout(() => card.classList.remove('glitch-anim'), 300);
+
         if (!usedCodes.includes(code)) {
             usedCodes.push(code);
             localStorage.setItem('ue_used_codes', JSON.stringify(usedCodes));
+            updateStats();
         }
 
-        // 視覺更新
-        const card = document.getElementById(cardId);
         card.classList.add('used');
-        card.querySelector('.giant-btn').innerHTML = `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg> 已領取`;
+        card.querySelector('.giant-btn').innerHTML = `已領取`;
         
         navigator.clipboard.writeText(code).then(() => {
-            showToast('⚡ 代碼擷取成功，啟動 App...');
-            if (navigator.vibrate) navigator.vibrate(50);
+            showToast('⚡ 破解完成，即將啟動 App...');
+            if (navigator.vibrate) navigator.vibrate([30, 50, 30]); // 特殊駭客震動
             
             setTimeout(() => {
                 window.location.href = "ubereats://promotions";
-            }, 400);
+                if (isHideUsed) renderList(currentFilter); // 如果開啟隱藏，點完跳轉後直接消失
+            }, 500);
         });
     }
 
-    // 重置記憶緩存
     function resetMemory() {
-        if (confirm("⚠️ 確定要清除所有已領取的記憶嗎？這會讓所有變暗的優惠卡片重新亮起。")) {
-            usedCodes = [];
-            localStorage.removeItem('ue_used_codes'); // 清空 LocalStorage
-            
-            if (navigator.vibrate) navigator.vibrate([30, 50, 30]); // 特殊震動回饋
-            
-            renderList(currentFilter); // 重新渲染
-            showToast('♻️ 終端快取已清除');
+        if (confirm("⚠️ 確定清除所有戰績與快取？")) {
+            usedCodes = []; localStorage.removeItem('ue_used_codes');
+            updateStats(); renderList(currentFilter); showToast('♻️ 系統已重置');
         }
     }
 
     function showToast(msg) {
         const t = document.getElementById('toast');
-        t.innerText = msg;
-        t.classList.add('show');
+        t.innerText = msg; t.classList.add('show');
         setTimeout(() => t.classList.remove('show'), 2000);
     }
 </script>
 
 </body>
 </html>
+
