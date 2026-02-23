@@ -141,7 +141,6 @@
         .fab-group { position: fixed; bottom: 30px; display: flex; justify-content: space-between; width: calc(100% - 40px); left: 20px; z-index: 99; pointer-events: none; }
         .fab-group > * { pointer-events: auto; }
         
-        /* 縮小放置於左下方的清除記憶按鈕 */
         .reset-fab {
             width: 45px; height: 45px; background: rgba(255, 59, 48, 0.1); border: 1px solid rgba(255, 59, 48, 0.3);
             border-radius: 50%; display: flex; justify-content: center; align-items: center; color: var(--danger);
@@ -150,7 +149,6 @@
         .reset-fab:hover { opacity: 1; background: rgba(255, 59, 48, 0.2); box-shadow: 0 0 15px rgba(255,59,48,0.5); }
         .reset-fab:active { transform: scale(0.8); }
 
-        /* 右下角回到頂部 */
         .fab-top {
             width: 45px; height: 45px; background: rgba(10,10,12,0.9); border: 2px solid var(--ue-green); border-radius: 50%;
             display: flex; justify-content: center; align-items: center; color: var(--ue-green);
@@ -160,8 +158,8 @@
         .fab-top.visible { opacity: 1; transform: translateY(0); }
         .fab-top:active { transform: scale(0.8); }
 
-        .loading { text-align: center; color: var(--ue-green); padding: 80px 20px; font-size: 16px; font-weight: 900; letter-spacing: 2px; animation: pulse 1s infinite alternate; }
-        @keyframes pulse { 0% { opacity: 0.2; transform: scale(0.98); } 100% { opacity: 1; transform: scale(1.02); } }
+        .loading { text-align: center; color: var(--ue-green); padding: 80px 20px; font-size: 16px; font-weight: 900; letter-spacing: 2px; animation: textPulse 1s infinite alternate; }
+        @keyframes textPulse { 0% { opacity: 0.3; } 100% { opacity: 1; } }
 
         .toast { 
             position: fixed; bottom: 90px; left: 50%; transform: translateX(-50%) translateY(30px) scale(0.9); 
@@ -171,23 +169,30 @@
         }
         .toast.show { opacity: 1; transform: translateX(-50%) translateY(0) scale(1); }
         
-        /* 音頻授權提示 */
+        /* 音頻授權提示 (修復觸控死角) */
         .audio-overlay {
             position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.95); z-index: 9999;
             display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; padding: 20px;
+            cursor: pointer; /* 讓整面都可以點 */
         }
-        .audio-btn { background: var(--ue-green); color: #000; border: none; padding: 15px 40px; font-size: 18px; font-weight: 900; border-radius: 30px; margin-top: 20px; cursor: pointer; letter-spacing: 2px; box-shadow: 0 0 30px var(--ue-green-glow); animation: pulse 2s infinite; }
+        /* 取消了容易導致 Bug 的 scale 動畫，改為光暈閃爍 */
+        .audio-btn { 
+            background: var(--ue-green); color: #000; border: none; padding: 15px 40px; font-size: 18px; font-weight: 900; 
+            border-radius: 30px; margin-top: 20px; cursor: pointer; letter-spacing: 2px; 
+            animation: btnGlow 2s infinite alternate; pointer-events: none; /* 防止與外層衝突 */
+        }
+        @keyframes btnGlow { 0% { box-shadow: 0 0 10px var(--ue-green-glow); } 100% { box-shadow: 0 0 30px var(--ue-green); } }
     </style>
 </head>
 <body>
 
 <canvas id="matrix-canvas"></canvas>
 
-<div id="audio-auth" class="audio-overlay">
+<div id="audio-auth" class="audio-overlay" onclick="initSystem()">
     <svg width="60" height="60" viewBox="0 0 24 24" fill="none" stroke="var(--ue-green)" stroke-width="2" style="margin-bottom:20px; filter: drop-shadow(0 0 10px var(--ue-green));"><path d="M12 2v20M17 5v14M22 8v8M7 5v14M2 8v8"/></svg>
     <h2 style="color:white; margin:0 0 10px; font-size:24px;">量子終端已連線</h2>
-    <p style="color:#aaa; font-size:14px; margin-bottom: 30px;">本系統搭載神經音效與震動引擎<br>請解除保險以獲得最頂級的駭客體驗</p>
-    <button class="audio-btn" onclick="initSystem()">解鎖系統 (UNLOCK)</button>
+    <p style="color:#aaa; font-size:14px; margin-bottom: 30px;">本系統搭載神經音效與震動引擎<br>請點擊畫面任意處解鎖終端</p>
+    <button class="audio-btn">點擊畫面解鎖 (UNLOCK)</button>
 </div>
 
 <div class="header">
@@ -249,12 +254,19 @@
     // --- Web Audio API 音效引擎 ---
     let audioCtx;
     function initSystem() {
-        document.getElementById('audio-auth').style.display = 'none';
+        const authScreen = document.getElementById('audio-auth');
+        if (authScreen) authScreen.style.display = 'none'; // 先關閉畫面，保證不卡死
+        
         try {
-            audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-            playSound(800, 'square', 0.1);
-            setTimeout(() => playSound(1200, 'sine', 0.2), 100);
-        } catch(e) {}
+            const AudioContext = window.AudioContext || window.webkitAudioContext;
+            if (AudioContext) {
+                audioCtx = new AudioContext();
+                playSound(800, 'square', 0.1);
+                setTimeout(() => playSound(1200, 'sine', 0.2), 100);
+            }
+        } catch(e) {
+            console.log("Audio not supported", e);
+        }
     }
 
     function playSound(freq, type, duration) {
@@ -308,7 +320,6 @@
         }
     }
 
-    // 懸浮按鈕顯示邏輯
     window.onscroll = function() {
         const fab = document.getElementById('fab-top');
         if (document.body.scrollTop > 300 || document.documentElement.scrollTop > 300) fab.classList.add('visible');
@@ -319,15 +330,4 @@
     let isOldUser = localStorage.getItem('ue_is_old_user') === 'true';
     let isHideUsed = localStorage.getItem('ue_hide_used') === 'true';
 
-    document.getElementById('toggle-new-user').checked = isOldUser;
-    document.getElementById('toggle-hide-used').checked = isHideUsed;
-    
-    // UI修正1：連動隱藏新戶分類按鈕
-    document.getElementById('btn-filter-new').style.display = isOldUser ? 'none' : 'inline-block';
-    
-    updateStats();
-
-    fetch(csvUrl).then(res => res.text()).then(csvText => {
-        const rows = csvText.replace(/\r/g, '').split('\n');
-        allData = [];
-        for (let i = 1; i < rows.l
+    document.getElementById('toggle-new-user').checked = isO
