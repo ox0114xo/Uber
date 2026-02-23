@@ -223,10 +223,13 @@
             const end = cols[0].trim(), label = cols[1].trim(), desc = cols[2].trim(), code = cols[3].trim();
             if (!code || code.toLowerCase() === '優惠碼') continue;
 
+            // 🤖 升級版智能分類器：合併文字一起檢查
             let type = 'hot';
-            if (label.includes('新')) type = 'new';
-            else if (label.includes('會員') || label.includes('優市') || label.includes('自取')) type = 'vip';
-            else if (label.includes('卡') || label.includes('台新') || label.includes('中信') || label.includes('國泰')) type = 'card';
+            let checkText = label + desc; 
+            
+            if (checkText.includes('新')) type = 'new';
+            else if (checkText.includes('會員') || checkText.includes('優市') || checkText.includes('自取')) type = 'vip';
+            else if (checkText.includes('卡') || checkText.includes('台新') || checkText.includes('中信') || checkText.includes('國泰') || checkText.includes('富邦') || checkText.includes('聯名') || checkText.includes('銀行')) type = 'card';
 
             allData.push({ id: i, code, desc, type, label, end });
         }
@@ -376,4 +379,3 @@
 
 </body>
 </html>
-
