@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Uber Eats 終端 | Genesis Edition</title>
+    <title>Uber Eats 終端 | Apex Edition</title>
     <style>
         /* === 創世變數 === */
         :root { 
@@ -14,22 +14,21 @@
             --gold: #FFD700; --gold-glow: rgba(255, 215, 0, 0.5);
         }
         
-        /* === 動態網格背景 === */
         body { 
             font-family: "SF Pro Display", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; 
             background-color: var(--bg-dark);
-            background-image: 
-                linear-gradient(rgba(6, 193, 103, 0.03) 1px, transparent 1px),
-                linear-gradient(90deg, rgba(6, 193, 103, 0.03) 1px, transparent 1px);
-            background-size: 30px 30px;
-            background-position: center center;
+            background-image: linear-gradient(rgba(6, 193, 103, 0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(6, 193, 103, 0.03) 1px, transparent 1px);
+            background-size: 30px 30px; background-position: center center;
             animation: gridMove 20s linear infinite;
             margin: 0; padding: 0; color: var(--text-main); 
             -webkit-tap-highlight-color: transparent; letter-spacing: 0.5px;
         }
         @keyframes gridMove { 0% { background-position: 0 0; } 100% { background-position: 30px 30px; } }
         
-        /* 上帝模式特效 (隱藏彩蛋) */
+        /* 隱藏的 Matrix Canvas */
+        #matrix-canvas { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1; opacity: 0; transition: opacity 1s; pointer-events: none; }
+        #matrix-canvas.active { opacity: 0.8; }
+
         body.god-mode {
             --ue-green: #FF3B30; --ue-green-glow: rgba(255, 59, 48, 0.6);
             background-image: radial-gradient(circle at center, rgba(255,59,48,0.1) 0%, transparent 100%),
@@ -81,7 +80,7 @@
         input:checked + .slider:before { transform: translateX(20px); }
         .settings-text { font-size: 13px; color: #ccc; font-weight: 700; }
 
-        .filter-scroll { overflow-x: auto; white-space: nowrap; padding: 5px 20px; -webkit-overflow-scrolling: touch; display: flex; gap: 10px; scrollbar-width: none; }
+        .filter-scroll { overflow-x: auto; white-space: nowrap; padding: 5px 20px; -webkit-overflow-scrolling: touch; display: flex; gap: 10px; scrollbar-width: none; transition: 0.3s; }
         .filter-scroll::-webkit-scrollbar { display: none; }
         .filter-btn { 
             background: rgba(255,255,255,0.05); color: #aaa; border: 1px solid rgba(255,255,255,0.1);
@@ -101,20 +100,9 @@
         }
         @keyframes slideUp { from { opacity: 0; transform: translateY(30px); filter: blur(5px); } to { opacity: 1; transform: translateY(0); filter: blur(0); } }
         
-        /* 頂級閃卡 (包含免運或高額度) */
-        .card.ur-tier {
-            border: 1px solid var(--gold);
-            box-shadow: 0 0 15px var(--gold-glow), inset 0 0 20px rgba(255,215,0,0.05);
-            animation: urBreathing 3s infinite alternate, slideUp 0.5s ease backwards;
-        }
+        .card.ur-tier { border: 1px solid var(--gold); box-shadow: 0 0 15px var(--gold-glow), inset 0 0 20px rgba(255,215,0,0.05); animation: urBreathing 3s infinite alternate, slideUp 0.5s ease backwards; }
         @keyframes urBreathing { 0% { box-shadow: 0 0 10px var(--gold-glow); } 100% { box-shadow: 0 0 25px rgba(255,215,0,0.8); } }
-        
-        /* 頂級閃卡背景光澤 */
-        .card.ur-tier::before {
-            content: ''; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%;
-            background: linear-gradient(45deg, transparent, rgba(255,215,0,0.1), transparent);
-            transform: rotate(45deg); animation: urShine 3s infinite linear; pointer-events: none;
-        }
+        .card.ur-tier::before { content: ''; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%; background: linear-gradient(45deg, transparent, rgba(255,215,0,0.1), transparent); transform: rotate(45deg); animation: urShine 3s infinite linear; pointer-events: none; }
         @keyframes urShine { 0% { transform: translateX(-100%) rotate(45deg); } 100% { transform: translateX(100%) rotate(45deg); } }
 
         .glitch-anim { animation: glitch 0.3s cubic-bezier(.25, .46, .45, .94) both infinite; border-color: var(--ue-green); }
@@ -143,31 +131,40 @@
             width: 100%; background: var(--ue-green); color: #000; border: none; padding: 18px 0; font-size: 16px; font-weight: 900;
             text-align: center; letter-spacing: 4px; cursor: pointer; transition: 0.2s cubic-bezier(0.4, 0, 0.2, 1);
             display: flex; justify-content: center; align-items: center; gap: 10px; z-index: 2; position: relative;
-            box-shadow: inset 0 -5px 15px rgba(0,0,0,0.3); text-transform: uppercase;
+            box-shadow: inset 0 -5px 15px rgba(0,0,0,0.3); text-transform: uppercase; overflow: hidden;
         }
         .giant-btn:active { background: #00ff88; transform: scale(0.98); box-shadow: inset 0 5px 15px rgba(0,0,0,0.5); }
         .ur-tier .giant-btn { background: var(--gold); }
-        .card.used .giant-btn { background: #1a1a1c; color: #555; }
+        .card.used .giant-btn { background: #1a1a1c; color: #555; box-shadow: none; }
 
-        .reset-btn { display: flex; justify-content: center; align-items: center; gap: 8px; width: 100%; background: rgba(255,255,255,0.03); color: #888; border: 1px dashed #444; padding: 18px 0; border-radius: 14px; font-size: 14px; font-weight: 800; cursor: pointer; margin-top: 50px; transition: 0.3s; }
-        .reset-btn:active { background: rgba(255, 59, 48, 0.15); border-color: var(--danger); color: var(--danger); }
+        /* === 重製懸浮/縮小按鈕 === */
+        .fab-group { position: fixed; bottom: 30px; display: flex; justify-content: space-between; width: calc(100% - 40px); left: 20px; z-index: 99; pointer-events: none; }
+        .fab-group > * { pointer-events: auto; }
+        
+        /* 縮小放置於左下方的清除記憶按鈕 */
+        .reset-fab {
+            width: 45px; height: 45px; background: rgba(255, 59, 48, 0.1); border: 1px solid rgba(255, 59, 48, 0.3);
+            border-radius: 50%; display: flex; justify-content: center; align-items: center; color: var(--danger);
+            cursor: pointer; transition: 0.3s; backdrop-filter: blur(10px); opacity: 0.6;
+        }
+        .reset-fab:hover { opacity: 1; background: rgba(255, 59, 48, 0.2); box-shadow: 0 0 15px rgba(255,59,48,0.5); }
+        .reset-fab:active { transform: scale(0.8); }
 
-        /* === 懸浮中樞按鈕 === */
-        .fab {
-            position: fixed; bottom: 30px; right: 20px; width: 50px; height: 50px;
-            background: rgba(10,10,12,0.9); border: 2px solid var(--ue-green); border-radius: 50%;
+        /* 右下角回到頂部 */
+        .fab-top {
+            width: 45px; height: 45px; background: rgba(10,10,12,0.9); border: 2px solid var(--ue-green); border-radius: 50%;
             display: flex; justify-content: center; align-items: center; color: var(--ue-green);
             box-shadow: 0 0 20px var(--ue-green-glow); cursor: pointer; opacity: 0; transform: translateY(20px);
-            transition: 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55); z-index: 99; backdrop-filter: blur(10px);
+            transition: 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55); backdrop-filter: blur(10px);
         }
-        .fab.visible { opacity: 1; transform: translateY(0); }
-        .fab:active { transform: scale(0.8); }
+        .fab-top.visible { opacity: 1; transform: translateY(0); }
+        .fab-top:active { transform: scale(0.8); }
 
         .loading { text-align: center; color: var(--ue-green); padding: 80px 20px; font-size: 16px; font-weight: 900; letter-spacing: 2px; animation: pulse 1s infinite alternate; }
         @keyframes pulse { 0% { opacity: 0.2; transform: scale(0.98); } 100% { opacity: 1; transform: scale(1.02); } }
 
         .toast { 
-            position: fixed; bottom: 50px; left: 50%; transform: translateX(-50%) translateY(30px) scale(0.9); 
+            position: fixed; bottom: 90px; left: 50%; transform: translateX(-50%) translateY(30px) scale(0.9); 
             background: var(--ue-green); color: #000; padding: 16px 32px; border-radius: 40px; 
             font-size: 16px; font-weight: 900; opacity: 0; transition: 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55); 
             pointer-events: none; z-index: 999; box-shadow: 0 15px 50px var(--ue-green-glow); white-space: nowrap; letter-spacing: 2px;
@@ -176,19 +173,21 @@
         
         /* 音頻授權提示 */
         .audio-overlay {
-            position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.9); z-index: 9999;
+            position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.95); z-index: 9999;
             display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; padding: 20px;
         }
-        .audio-btn { background: var(--ue-green); color: #000; border: none; padding: 15px 40px; font-size: 18px; font-weight: 900; border-radius: 30px; margin-top: 20px; cursor: pointer; letter-spacing: 2px; box-shadow: 0 0 30px var(--ue-green-glow); }
+        .audio-btn { background: var(--ue-green); color: #000; border: none; padding: 15px 40px; font-size: 18px; font-weight: 900; border-radius: 30px; margin-top: 20px; cursor: pointer; letter-spacing: 2px; box-shadow: 0 0 30px var(--ue-green-glow); animation: pulse 2s infinite; }
     </style>
 </head>
 <body>
 
+<canvas id="matrix-canvas"></canvas>
+
 <div id="audio-auth" class="audio-overlay">
     <svg width="60" height="60" viewBox="0 0 24 24" fill="none" stroke="var(--ue-green)" stroke-width="2" style="margin-bottom:20px; filter: drop-shadow(0 0 10px var(--ue-green));"><path d="M12 2v20M17 5v14M22 8v8M7 5v14M2 8v8"/></svg>
-    <h2 style="color:white; margin:0 0 10px; font-size:24px;">創世終端已連線</h2>
-    <p style="color:#aaa; font-size:14px; margin-bottom: 30px;">本系統配備全原生神經音效引擎<br>請授權啟動以獲得完整感官體驗</p>
-    <button class="audio-btn" onclick="initSystem()">啟動系統 (INITIATE)</button>
+    <h2 style="color:white; margin:0 0 10px; font-size:24px;">量子終端已連線</h2>
+    <p style="color:#aaa; font-size:14px; margin-bottom: 30px;">本系統搭載神經音效與震動引擎<br>請解除保險以獲得最頂級的駭客體驗</p>
+    <button class="audio-btn" onclick="initSystem()">解鎖系統 (UNLOCK)</button>
 </div>
 
 <div class="header">
@@ -198,7 +197,7 @@
     </div>
     
     <div class="search-container">
-        <input type="text" id="search-input" class="search-box" placeholder="> 執行關鍵字檢索 (星巴克, 買一送一)..." onkeyup="handleSearch()">
+        <input type="text" id="search-input" class="search-box" placeholder="> 執行關鍵字檢索 或輸入指令..." onkeyup="handleSearch(event)">
     </div>
 
     <div class="control-panel">
@@ -218,21 +217,22 @@
         <button class="filter-btn active" onclick="filter('all')">全域網路 (<span id="count-all">0</span>)</button>
         <button class="filter-btn" onclick="filter('hot')">一般節點</button>
         <button class="filter-btn" onclick="filter('vip')">高階權限</button>
-        <button class="filter-btn" onclick="filter('new')">新進節點</button>
+        <button class="filter-btn" id="btn-filter-new" onclick="filter('new')">新進節點</button>
         <button class="filter-btn" onclick="filter('card')">金融通道</button>
     </div>
 </div>
 
 <div class="container">
-    <div id="list"><div class="loading">［ 正在同步全球伺服器資料庫... ］</div></div>
-    <button class="reset-btn" onclick="resetMemory()" id="reset-btn" style="display: none;">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path><path d="M3 3v5h5"></path></svg>
-        格式化記憶體 (清除所有駭入紀錄)
-    </button>
+    <div id="list"><div class="loading">［ 正在同步全球伺服器庫... ］</div></div>
 </div>
 
-<div class="fab" id="fab" onclick="window.scrollTo({top:0, behavior:'smooth'}); playSound(600, 'sine', 0.1);">
-    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="18 15 12 9 6 15"></polyline></svg>
+<div class="fab-group">
+    <div class="reset-fab" onclick="resetMemory()" title="清除終端記憶">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path><path d="M3 3v5h5"></path></svg>
+    </div>
+    <div class="fab-top" id="fab-top" onclick="window.scrollTo({top:0, behavior:'smooth'}); playSound(600, 'sine', 0.1);">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="18 15 12 9 6 15"></polyline></svg>
+    </div>
 </div>
 
 <div id="toast" class="toast">⚡ 代碼解析成功</div>
@@ -244,14 +244,17 @@
     let currentFilter = 'all';
     let searchQuery = '';
     let godModeClicks = 0;
+    let isMatrixMode = false;
 
     // --- Web Audio API 音效引擎 ---
     let audioCtx;
     function initSystem() {
         document.getElementById('audio-auth').style.display = 'none';
-        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-        playSound(800, 'square', 0.1);
-        setTimeout(() => playSound(1200, 'sine', 0.2), 100);
+        try {
+            audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            playSound(800, 'square', 0.1);
+            setTimeout(() => playSound(1200, 'sine', 0.2), 100);
+        } catch(e) {}
     }
 
     function playSound(freq, type, duration) {
@@ -269,23 +272,45 @@
         osc.stop(audioCtx.currentTime + duration);
     }
 
-    // 彩蛋：上帝模式
+    // --- Matrix Rain 彩蛋特效 ---
+    const canvas = document.getElementById('matrix-canvas');
+    const ctx = canvas.getContext('2d');
+    canvas.width = window.innerWidth; canvas.height = window.innerHeight;
+    const letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789@#$%^&*'.split('');
+    const fontSize = 14; const columns = canvas.width / fontSize;
+    const drops = []; for(let x = 0; x < columns; x++) drops[x] = 1;
+
+    function drawMatrix() {
+        if(!isMatrixMode) return;
+        ctx.fillStyle = 'rgba(0, 0, 0, 0.05)';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        ctx.fillStyle = '#0F0'; ctx.font = fontSize + 'px monospace';
+        for(let i = 0; i < drops.length; i++) {
+            const text = letters[Math.floor(Math.random() * letters.length)];
+            ctx.fillText(text, i * fontSize, drops[i] * fontSize);
+            if(drops[i] * fontSize > canvas.height && Math.random() > 0.975) drops[i] = 0;
+            drops[i]++;
+        }
+        requestAnimationFrame(drawMatrix);
+    }
+
+    // 上帝模式
     function triggerGodMode() {
         godModeClicks++;
         playSound(400 + (godModeClicks * 100), 'sawtooth', 0.1);
         if (godModeClicks >= 5) {
             document.body.classList.add('god-mode');
             document.getElementById('sys-title').innerText = "SYSTEM OVERRIDE";
-            playSound(150, 'sawtooth', 1); // 低頻狂暴音效
+            playSound(150, 'sawtooth', 1); 
             if (navigator.vibrate) navigator.vibrate([100, 50, 100, 50, 300]);
             showToast('⚠️ 警告：已進入超頻上帝模式');
-            godModeClicks = 0; // 重置
+            godModeClicks = 0;
         }
     }
 
     // 懸浮按鈕顯示邏輯
     window.onscroll = function() {
-        const fab = document.getElementById('fab');
+        const fab = document.getElementById('fab-top');
         if (document.body.scrollTop > 300 || document.documentElement.scrollTop > 300) fab.classList.add('visible');
         else fab.classList.remove('visible');
     };
@@ -296,41 +321,13 @@
 
     document.getElementById('toggle-new-user').checked = isOldUser;
     document.getElementById('toggle-hide-used').checked = isHideUsed;
+    
+    // UI修正1：連動隱藏新戶分類按鈕
+    document.getElementById('btn-filter-new').style.display = isOldUser ? 'none' : 'inline-block';
+    
     updateStats();
 
     fetch(csvUrl).then(res => res.text()).then(csvText => {
         const rows = csvText.replace(/\r/g, '').split('\n');
         allData = [];
-        for (let i = 1; i < rows.length; i++) {
-            let row = rows[i].trim();
-            if (!row) continue;
-            let cols = row.split(',');
-            if (cols.length < 4) continue;
-            
-            const end = cols[0].trim(), label = cols[1].trim(), desc = cols[2].trim(), code = cols[3].trim();
-            if (!code || code.toLowerCase() === '優惠碼') continue;
-
-            let type = 'hot';
-            let checkText = label + desc; 
-            
-            if (checkText.includes('新戶') || checkText.includes('新客') || checkText.includes('首購')) type = 'new';
-            else if (checkText.includes('會員') || checkText.includes('優市') || checkText.includes('自取')) type = 'vip';
-            else if (checkText.includes('卡') || checkText.includes('台新') || checkText.includes('中信') || checkText.includes('國泰') || checkText.includes('富邦') || checkText.includes('聯名') || checkText.includes('銀行')) type = 'card';
-
-            // 🤖 AI 價值尋寶判定 (閃卡機制)
-            let isUR = false;
-            if (checkText.includes('免運') || checkText.includes('150') || checkText.includes('200') || checkText.includes('買一送一') || checkText.includes('五折') || checkText.includes('5折')) {
-                isUR = true;
-            }
-
-            allData.push({ id: i, code, desc, type, label, end, isUR });
-        }
-        document.getElementById('reset-btn').style.display = 'flex';
-        renderList(currentFilter);
-    }).catch(() => {
-        document.getElementById('list').innerHTML = `<div class="loading" style="color:#FF3B30">［ 伺服器連線中斷 ］</div>`;
-    });
-
-    function handleSearch() {
-        searchQuery = document.getElementById('search-input').value.toLowerCase();
-        playSound(600, 'square
+        for (let i = 1; i < rows.l
