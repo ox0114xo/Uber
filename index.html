@@ -16,62 +16,53 @@
             --text-main: #ffffff; --border-color: #2a2a2e;
         }
         
-        body { font-family: -apple-system, sans-serif; background: var(--bg-dark); margin: 0; padding: 0; color: var(--text-main); overflow-x: hidden; }
+        body { font-family: -apple-system, sans-serif; background: var(--bg-dark); margin: 0; padding: 0; color: var(--text-main); }
 
-        /* === PWA 引導層：預設 display: none，避免閃現 === */
-        #pwa-overlay {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(7, 7, 9, 0.98); z-index: 10000;
-            display: none; flex-direction: column; align-items: center; justify-content: center;
-            padding: 40px; box-sizing: border-box; text-align: center;
-        }
-        #pwa-overlay.show { display: flex; } /* 只有在需要時才顯示 */
-        
-        .close-pwa { position: absolute; top: 30px; right: 30px; font-size: 28px; color: #555; cursor: pointer; padding: 10px; }
-        .pwa-logo { width: 100px; height: 100px; border-radius: 22px; margin-bottom: 25px; box-shadow: 0 0 20px rgba(6,193,103,0.3); }
-        
-        #android-btn { background: var(--ue-green); color: #000; border: none; padding: 18px 0; border-radius: 12px; font-size: 18px; font-weight: 800; width: 100%; cursor: pointer; }
-        #android-btn:disabled { background: #333; color: #666; }
-
-        #ios-guide { display: none; width: 100%; text-align: left; }
-        .ios-step { background: #1a1a1c; padding: 15px; border-radius: 12px; margin-bottom: 10px; font-size: 14px; display: flex; gap: 10px; }
-
-        /* 主介面 */
+        /* === 主介面：預設直接顯示 === */
         .header { position: sticky; top: 0; background: rgba(7, 7, 9, 0.9); backdrop-filter: blur(15px); z-index: 100; border-bottom: 1px solid var(--border-color); padding-bottom: 15px; }
         .title-bar { padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; }
         .title-bar h1 { margin: 0; font-size: 24px; font-weight: 900; letter-spacing: 1px; color: #fff; }
         
         .search-container { padding: 5px 20px 15px; }
-        .search-box { width: 100%; box-sizing: border-box; background: #1a1a1c; border: 1px solid #333; color: var(--ue-green); padding: 12px; border-radius: 10px; outline: none; }
+        .search-box { width: 100%; box-sizing: border-box; background: #1a1a1c; border: 1px solid #333; color: var(--ue-green); padding: 12px; border-radius: 10px; outline: none; font-size: 16px; }
 
         .filter-scroll { overflow-x: auto; white-space: nowrap; padding: 0 20px 10px; display: flex; gap: 10px; scrollbar-width: none; }
         .filter-btn { background: #1a1a1c; color: #888; border: 1px solid #333; padding: 8px 16px; border-radius: 20px; font-size: 13px; font-weight: 700; cursor: pointer; }
         .filter-btn.active { background: rgba(6, 193, 103, 0.1); color: var(--ue-green); border-color: var(--ue-green); }
 
-        .container { max-width: 600px; margin: 0 auto; padding: 20px 20px 100px; }
+        .container { max-width: 600px; margin: 0 auto; padding: 20px; padding-bottom: 100px; }
         .card { background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 16px; margin-bottom: 20px; padding: 20px; }
         .code { font-size: 26px; font-weight: 900; color: var(--ue-green); font-family: monospace; }
         .copy-btn { width: 100%; background: var(--ue-green); color: #000; border: none; padding: 16px; border-radius: 12px; font-weight: 800; margin-top: 15px; cursor: pointer; }
+
+        /* === 隱藏的引導層：預設完全不顯示 === */
+        #pwa-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(7, 7, 9, 0.98); z-index: 10000;
+            display: none; /* 核心：預設隱藏 */
+            flex-direction: column; align-items: center; justify-content: center;
+            padding: 40px; box-sizing: border-box; text-align: center;
+            animation: fadeIn 0.5s ease;
+        }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        
+        .close-pwa { position: absolute; top: 30px; right: 30px; font-size: 28px; color: #555; cursor: pointer; padding: 10px; }
+        .pwa-logo { width: 100px; height: 100px; border-radius: 22px; box-shadow: 0 0 20px rgba(6,193,103,0.3); margin-bottom: 25px; }
+        #android-btn { background: var(--ue-green); color: #000; border: none; padding: 18px 0; border-radius: 12px; font-size: 18px; font-weight: 800; width: 100%; cursor: pointer; }
+
+        #ios-guide { display: none; width: 100%; text-align: left; }
+        .ios-step { background: #1a1a1c; padding: 15px; border-radius: 12px; margin-bottom: 10px; font-size: 14px; display: flex; gap: 10px; }
+        
+        .toast { position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%) translateY(20px); background: var(--ue-green); color: #000; padding: 12px 25px; border-radius: 30px; font-weight: 800; opacity: 0; transition: 0.4s; z-index: 11000; }
+        .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
     </style>
 </head>
 <body>
 
-<div id="pwa-overlay">
-    <div class="close-pwa" onclick="dismissInstall()">✕</div>
-    <img src="image_6.png" class="pwa-logo">
-    <h2 style="margin:0 0 10px;">安裝至桌面</h2>
-    <p style="color:#888; margin-bottom:35px; line-height:1.6;">安裝後即可解鎖全螢幕模式<br>並獲取最新優惠代碼。</p>
-    <button id="android-btn" onclick="triggerInstall()" disabled>偵測環境中...</button>
-    <div id="ios-guide">
-        <div class="ios-step">1. 點擊瀏覽器下方<strong>「分享」</strong>按鈕</div>
-        <div class="ios-step">2. 點擊<strong>「加入主螢幕」</strong>即可</div>
-    </div>
-</div>
-
 <div class="header">
     <div class="title-bar"><h1>UBER EATS</h1></div>
     <div class="search-container">
-        <input type="text" id="search-input" class="search-box" placeholder="搜尋代碼..." onkeyup="render()">
+        <input type="text" id="search-input" class="search-box" placeholder="搜尋代碼或內容..." onkeyup="render()">
     </div>
     <div class="filter-scroll">
         <button class="filter-btn active" id="f-all" onclick="setFilter('all')">全部</button>
@@ -80,59 +71,61 @@
     </div>
 </div>
 
-<div class="container" id="list"></div>
+<div class="container" id="list">
+    <div style="text-align:center; color:#555; padding:50px;">正在同步伺服器資料...</div>
+</div>
+
+<div id="pwa-overlay">
+    <div class="close-pwa" onclick="dismissInstall()">✕</div>
+    <img src="image_6.png" class="pwa-logo">
+    <div style="font-size:24px; font-weight:800; margin-bottom:10px;">安裝至桌面</div>
+    <p style="color:#888; margin-bottom:35px; line-height:1.6;">安裝後即可享受全螢幕極速體驗<br>並解鎖更多隱藏功能。</p>
+    <button id="android-btn" onclick="triggerInstall()">一鍵安裝並解鎖</button>
+    <div id="ios-guide">
+        <div class="ios-step">1. 點擊瀏覽器下方<strong>「分享」</strong>按鈕</div>
+        <div class="ios-step">2. 點擊<strong>「加入主螢幕」</strong>即可</div>
+    </div>
+</div>
+
+<div id="toast" class="toast">✅ 已複製，正在開啟 App...</div>
 
 <script>
     if ('serviceWorker' in navigator) { navigator.serviceWorker.register('sw.js'); }
 
     let deferredPrompt;
     const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
-    
-    // 🔍 終極偵測：是否已經是獨立 App 模式
     const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone;
+    const isDismissed = localStorage.getItem('pwa_hide_today') === new Date().toDateString();
 
-    // 🕒 檢查今日是否已經手動關閉過
-    const lastDismissed = localStorage.getItem('pwa_dismissed');
-    const isDismissedToday = lastDismissed && (Date.now() - lastDismissed < 24 * 60 * 60 * 1000);
-
-    function checkOverlay() {
-        // 如果是已安裝開啟，或者今天已經關閉過，就絕對不顯示
-        if (isStandalone || isDismissedToday) {
-            document.getElementById('pwa-overlay').classList.remove('show');
-            return false;
-        }
-        // 否則，顯示引導
-        document.getElementById('pwa-overlay').classList.add('show');
-        if (isIOS) {
-            document.getElementById('android-btn').style.display = 'none';
-            document.getElementById('ios-guide').style.display = 'block';
-        }
-        return true;
-    }
-
+    // 🚀 核心邏輯：後臺研究
     window.onload = () => {
-        checkOverlay();
-        fetchData();
-        
-        // 3 秒後如果還在偵測中，自動轉換按鈕（解決截圖中的卡死問題）
+        fetchData(); // 第一時間加載資料
+
+        // 在後臺安靜地研究是否需要提示
         setTimeout(() => {
-            const btn = document.getElementById('android-btn');
-            if (btn && btn.disabled && !isIOS) {
-                btn.disabled = false;
-                btn.innerText = "手動安裝 / 進入 App";
-                btn.onclick = () => dismissInstall();
+            if (isStandalone) {
+                console.log("✅ 檢測到已安裝，完全不跑提示");
+                return;
             }
-        }, 3000);
+            
+            if (isDismissed) {
+                console.log("⏳ 今日已手動關閉過，不跑提示");
+                return;
+            }
+
+            // 如果不是 App 模式，且今天沒關閉過，才跳出提示
+            console.log("❌ 檢測為瀏覽器，彈出安裝建議");
+            document.getElementById('pwa-overlay').style.display = 'flex';
+            if (isIOS) {
+                document.getElementById('android-btn').style.display = 'none';
+                document.getElementById('ios-guide').style.display = 'block';
+            }
+        }, 3000); // 給使用者 3 秒鐘自由使用的時間
     };
 
     window.addEventListener('beforeinstallprompt', (e) => {
         e.preventDefault();
         deferredPrompt = e;
-        const btn = document.getElementById('android-btn');
-        if (btn) {
-            btn.disabled = false;
-            btn.innerText = "一鍵安裝並解鎖";
-        }
     });
 
     function triggerInstall() {
@@ -140,16 +133,17 @@
             deferredPrompt.prompt();
             deferredPrompt.userChoice.then((choice) => { if (choice.outcome === 'accepted') dismissInstall(); });
         } else {
-            dismissInstall(); // 沒抓到訊號也讓它進去
+            dismissInstall();
         }
     }
 
     function dismissInstall() {
-        document.getElementById('pwa-overlay').classList.remove('show');
-        localStorage.setItem('pwa_dismissed', Date.now()); // 記住關閉時間
+        document.getElementById('pwa-overlay').style.display = 'none';
+        // 記住今天已經關過了，不再煩人
+        localStorage.setItem('pwa_hide_today', new Date().toDateString());
     }
 
-    // --- 資料渲染邏輯 (保持不變) ---
+    // --- 資料載入與顯示 ---
     const csvUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSQfG95R3C-8YZIhBsIJUOLckEq3MpPihSYVSszeOgx9jmdnXsyE9ag9NgBx4gbZOUg5-2-qxx7zQit/pub?output=csv';
     let allData = [];
     let currentFilter = 'all';
@@ -164,6 +158,8 @@
                 return { end: c[0], label: c[1], desc: c[2], code: c[3].trim(), type: isNew ? 'new' : 'old' };
             }).filter(i => i);
             render();
+        }).catch(err => {
+            document.getElementById('list').innerHTML = '<div style="text-align:center; color:red;">連線超時，請重新整理</div>';
         });
     }
 
@@ -171,17 +167,27 @@
         const query = document.getElementById('search-input').value.toLowerCase();
         const container = document.getElementById('list');
         container.innerHTML = '';
-        allData.filter(i => (currentFilter === 'all' || (currentFilter === 'old' && i.type !== 'new') || i.type === currentFilter) && i.code.toLowerCase().includes(query))
-               .forEach(item => {
+        const filtered = allData.filter(i => (currentFilter === 'all' || (currentFilter === 'old' && i.type !== 'new') || i.type === currentFilter) && (i.code.toLowerCase().includes(query) || i.desc.toLowerCase().includes(query)));
+        
+        if(filtered.length === 0) {
+            container.innerHTML = '<div style="text-align:center; color:#555; padding:50px;">無符合條件的優惠</div>';
+            return;
+        }
+
+        filtered.forEach(item => {
             const card = document.createElement('div');
             card.className = 'card';
-            card.innerHTML = `<div class="code">${item.code}</div><div style="margin:10px 0;">${item.desc}</div><button class="copy-btn" onclick="copy('${item.code}')">複製優惠碼</button>`;
+            card.innerHTML = `<div class="code">${item.code}</div><div style="margin:10px 0; font-weight:600;">${item.desc}</div><div style="font-size:11px; color:#555;">⏳ ${item.end} | ${item.label}</div><button class="copy-btn" onclick="copy('${item.code}')">複製優惠碼</button>`;
             container.appendChild(card);
         });
     }
 
     function copy(code) {
-        navigator.clipboard.writeText(code).then(() => { window.location.href = "ubereats://promotions"; });
+        navigator.clipboard.writeText(code).then(() => {
+            const t = document.getElementById('toast');
+            t.classList.add('show');
+            setTimeout(() => { t.classList.remove('show'); window.location.href = "ubereats://promotions"; }, 800);
+        });
     }
 
     function setFilter(f) {
