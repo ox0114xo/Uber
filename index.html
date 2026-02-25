@@ -3,134 +3,164 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Uber Eats 優惠清單</title>
+    <title>Uber Eats 優惠</title>
     
     <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <link rel="apple-touch-icon" href="https://upload.wikimedia.org/wikipedia/commons/b/b3/Uber_Eats_App_Icon.svg">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="theme-color" content="#ffffff">
+    <link rel="apple-touch-icon" href="image_6.png">
+    <link rel="icon" type="image/png" href="image_6.png">
     
     <style>
+        /* === 官方風格變數 === */
         :root { 
-            --ue-green: #06C167; --bg-dark: #121212; --card-bg: #1e1e1e;
-            --text-main: #ffffff; --text-sub: #a0a0a0; --border-color: #333333; 
+            --ue-green: #06C167; --ue-black: #000000; --ue-gray-bg: #F6F6F6;
+            --ue-gray-text: #545454; --ue-border: #E0E0E0; --ue-white: #FFFFFF;
         }
         
         body { 
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; 
-            background-color: var(--bg-dark); margin: 0; padding: 0; color: var(--text-main); 
-            -webkit-tap-highlight-color: transparent;
+            font-family: 'Uber Move Text', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--ue-white); margin: 0; padding: 0; color: var(--ue-black); 
+            -webkit-font-smoothing: antialiased; -webkit-tap-highlight-color: transparent;
         }
 
-        /* === 佔領螢幕的安裝面板 === */
+        /* === 佔領螢幕的安裝引導 === */
         #install-overlay {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: var(--bg-dark); z-index: 9999;
-            display: flex; flex-direction: column; justify-content: center; align-items: center;
-            text-align: center; padding: 30px; box-sizing: border-box;
-            transition: opacity 0.5s ease;
+            background: var(--ue-white); z-index: 9999; display: flex; flex-direction: column; 
+            justify-content: center; align-items: center; text-align: center; padding: 40px; box-sizing: border-box;
         }
         #install-overlay.hidden { display: none; }
-        .app-icon { width: 80px; height: 80px; background: #fff; border-radius: 20px; margin-bottom: 20px; padding: 10px; }
-        .install-title { font-size: 24px; font-weight: 800; margin-bottom: 10px; }
-        .install-desc { color: var(--text-sub); margin-bottom: 40px; line-height: 1.6; }
-        
+        .app-icon { width: 100px; height: 100px; border-radius: 22px; margin-bottom: 30px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+        .install-title { font-size: 28px; font-weight: 700; margin-bottom: 12px; }
+        .install-desc { color: var(--ue-gray-text); font-size: 16px; margin-bottom: 40px; line-height: 1.5; }
         .btn-install { 
-            background: var(--ue-green); color: white; border: none; 
-            padding: 16px 40px; border-radius: 30px; font-size: 18px; font-weight: 700; 
-            cursor: pointer; width: 100%; max-width: 280px; margin-bottom: 15px;
+            background: var(--ue-black); color: var(--ue-white); border: none; 
+            padding: 18px 0; border-radius: 12px; font-size: 18px; font-weight: 700; 
+            cursor: pointer; width: 100%;
         }
-        .btn-skip { color: #666; background: transparent; border: none; font-size: 14px; cursor: pointer; }
+        
+        /* === 主介面 === */
+        .header { 
+            position: sticky; top: 0; background: var(--ue-white); z-index: 100; 
+            border-bottom: 1px solid var(--ue-border); padding-bottom: 12px;
+        }
+        .title-bar { 
+            padding: 16px 24px; display: flex; align-items: center; 
+        }
+        .title-bar img { width: 24px; height: 24px; margin-right: 12px; }
+        .title-bar h1 { margin: 0; font-size: 24px; font-weight: 700; letter-spacing: -0.5px; }
+        
+        .search-container { padding: 0 24px 12px; }
+        .search-box {
+            width: 100%; box-sizing: border-box; background: var(--ue-gray-bg); border: none;
+            color: var(--ue-black); padding: 14px 18px; border-radius: 50px; font-size: 16px;
+            outline: none; -webkit-appearance: none;
+        }
+        .search-box::placeholder { color: #A0A0A0; }
 
-        /* === 主介面樣式 (縮減版) === */
-        .header { position: sticky; top: 0; background: rgba(18, 18, 18, 0.95); backdrop-filter: blur(10px); z-index: 100; border-bottom: 1px solid var(--border-color); padding-bottom: 15px; }
-        .title-bar { padding: 16px 20px 10px; display: flex; justify-content: space-between; align-items: center; }
-        .title-bar h1 { margin: 0; font-size: 22px; font-weight: 700; }
-        .search-container { padding: 5px 20px 15px; }
-        .search-box { width: 100%; box-sizing: border-box; background: #222; border: 1px solid #444; color: #fff; padding: 12px; border-radius: 8px; outline: none; }
-        .filter-scroll { overflow-x: auto; white-space: nowrap; padding: 5px 20px; display: flex; gap: 8px; }
-        .filter-btn { background: #222; color: #aaa; border: 1px solid #444; padding: 8px 16px; border-radius: 20px; font-size: 14px; cursor: pointer; }
-        .filter-btn.active { background: rgba(6, 193, 103, 0.1); color: var(--ue-green); border-color: var(--ue-green); }
-        .container { padding: 20px; max-width: 600px; margin: 0 auto; }
-        .card { background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 12px; margin-bottom: 16px; overflow: hidden; }
-        .card.used { opacity: 0.4; filter: grayscale(1); }
-        .card-info { padding: 16px; }
-        .code { font-size: 22px; font-weight: 700; color: var(--ue-green); }
-        .desc { font-size: 14px; color: #ddd; margin-top: 8px; display: block; }
-        .giant-btn { width: 100%; background: var(--ue-green); color: #fff; border: none; padding: 14px; font-size: 16px; font-weight: 700; cursor: pointer; }
-        .footer-reset { text-align: center; padding: 40px; }
-        .reset-trigger { background: transparent; color: #555; border: 1px solid #333; padding: 8px 16px; border-radius: 8px; cursor: pointer; }
+        .filter-scroll { 
+            overflow-x: auto; white-space: nowrap; padding: 0 24px 12px; display: flex; gap: 10px; scrollbar-width: none; 
+        }
+        .filter-scroll::-webkit-scrollbar { display: none; }
+        .filter-btn { 
+            background: var(--ue-gray-bg); color: var(--ue-black); border: none;
+            padding: 10px 20px; border-radius: 30px; font-size: 14px; font-weight: 700; 
+            cursor: pointer; transition: 0.2s; flex-shrink: 0;
+        }
+        .filter-btn.active { background: var(--ue-black); color: var(--ue-white); }
+
+        .container { background: var(--ue-gray-bg); padding: 24px; min-height: calc(100vh - 150px); }
+        
+        .card { 
+            background: var(--ue-white); border-radius: 16px; margin-bottom: 20px; 
+            padding: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+            display: flex; flex-direction: column; transition: 0.2s;
+        }
+        .card.used { opacity: 0.6; }
+
+        .card-content { flex-grow: 1; margin-bottom: 20px; }
+        .code { 
+            font-size: 26px; font-weight: 800; color: var(--ue-green); 
+            margin-bottom: 8px; letter-spacing: 0.5px; display: block;
+        }
+        .desc { font-size: 17px; font-weight: 700; line-height: 1.4; margin-bottom: 8px; }
+        .meta { font-size: 13px; color: var(--ue-gray-text); display: flex; gap: 10px; align-items: center; }
+        .tag { background: var(--ue-gray-bg); padding: 4px 8px; border-radius: 6px; font-weight: 600; }
+
+        .btn-copy {
+            background: var(--ue-green); color: var(--ue-white); border: none; 
+            padding: 16px; border-radius: 12px; font-size: 16px; font-weight: 700; 
+            cursor: pointer; width: 100%; text-align: center; transition: 0.2s;
+        }
+        .btn-copy:active { transform: scale(0.98); }
+        .card.used .btn-copy { background: var(--ue-gray-bg); color: var(--ue-gray-text); pointer-events: none; }
+
+        .footer { text-align: center; padding: 30px 24px; background: var(--ue-gray-bg); }
+        .reset-link { color: var(--ue-gray-text); font-size: 14px; text-decoration: underline; cursor: pointer; }
+
+        .loading { text-align: center; padding: 40px; color: var(--ue-gray-text); font-weight: 600; }
+
+        .toast { 
+            position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%) translateY(20px); 
+            background: var(--ue-black); color: var(--ue-white); padding: 14px 28px; border-radius: 50px; 
+            font-size: 15px; font-weight: 700; opacity: 0; transition: 0.3s; 
+            pointer-events: none; z-index: 999; box-shadow: 0 4px 12px rgba(0,0,0,0.15); white-space: nowrap;
+        }
+        .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
     </style>
 </head>
 <body>
 
 <div id="install-overlay">
-    <img src="https://upload.wikimedia.org/wikipedia/commons/b/b3/Uber_Eats_App_Icon.svg" class="app-icon" alt="icon">
-    <div class="install-title">安裝至桌面</div>
-    <div class="install-desc">將此工具加入主螢幕<br>即可享受全螢幕、無廣告的極速體驗</div>
-    <button class="btn-install" onclick="triggerInstall()">立即安裝</button>
-    <button class="btn-skip" onclick="dismissInstall()">暫時不要，直接進入</button>
+    <img src="image_6.png" class="app-icon" alt="Uber Eats 優惠">
+    <div class="install-title">加入主畫面</div>
+    <div class="install-desc">將此優惠 App 加入您的主畫面，<br>享受更快速、全螢幕的使用體驗。</div>
+    <button class="btn-install" onclick="dismissInstall()">知道了</button>
+    <p style="margin-top: 20px; font-size: 14px; color: #999;">(請使用瀏覽器的「分享」功能加入)</p>
 </div>
 
 <div class="header">
     <div class="title-bar">
+        <img src="image_6.png" alt="Logo">
         <h1>Uber Eats 優惠</h1>
-        <div style="font-size:12px; color:#666;">專業純淨版</div>
     </div>
     <div class="search-container">
-        <input type="text" id="search-input" class="search-box" placeholder="搜尋代碼..." onkeyup="renderList()">
+        <input type="text" id="search-input" class="search-box" placeholder="搜尋優惠..." onkeyup="renderList()">
     </div>
     <div class="filter-scroll">
         <button class="filter-btn active" id="f-all" onclick="setFilter('all')">全部</button>
-        <button class="filter-btn" id="f-new" onclick="setFilter('new')">新戶</button>
-        <button class="filter-btn" id="f-vip" onclick="setFilter('vip')">會員</button>
+        <button class="filter-btn" id="f-new" onclick="setFilter('new')">新戶專屬</button>
+        <button class="filter-btn" id="f-vip" onclick="setFilter('vip')">會員優惠</button>
+        <button class="filter-btn" id="f-card" onclick="setFilter('card')">信用卡/銀行</button>
     </div>
 </div>
 
-<div class="container" id="list"></div>
-
-<div class="footer-reset">
-    <button class="reset-trigger" onclick="localStorage.clear(); location.reload();">恢復原廠設定</button>
+<div class="container" id="list">
+    <div class="loading">正在載入優惠...</div>
 </div>
+
+<div class="footer">
+    <span class="reset-link" onclick="resetApp()">清除所有紀錄</span>
+</div>
+
+<div id="toast" class="toast">已複製優惠碼</div>
 
 <script>
     const csvUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSQfG95R3C-8YZIhBsIJUOLckEq3MpPihSYVSszeOgx9jmdnXsyE9ag9NgBx4gbZOUg5-2-qxx7zQit/pub?output=csv';
     let allData = [];
     let currentFilter = 'all';
-    let deferredPrompt;
-
-    // --- 安裝功能邏輯 ---
+    
+    // PWA 安裝檢查
     if (localStorage.getItem('pwa_installed') === 'true' || window.navigator.standalone) {
         document.getElementById('install-overlay').classList.add('hidden');
     }
-
-    window.addEventListener('beforeinstallprompt', (e) => {
-        e.preventDefault();
-        deferredPrompt = e;
-    });
-
-    function triggerInstall() {
-        if (deferredPrompt) {
-            deferredPrompt.prompt();
-            deferredPrompt.userChoice.then((choice) => {
-                if (choice.outcome === 'accepted') {
-                    dismissInstall();
-                }
-            });
-        } else {
-            alert("請點擊瀏覽器選單中的『加入主螢幕』按鈕進行安裝。");
-            dismissInstall();
-        }
-    }
-
     function dismissInstall() {
-        document.getElementById('install-overlay').style.opacity = '0';
-        setTimeout(() => {
-            document.getElementById('install-overlay').classList.add('hidden');
-            localStorage.setItem('pwa_installed', 'true'); // 永遠不再顯示
-        }, 500);
+        document.getElementById('install-overlay').classList.add('hidden');
+        localStorage.setItem('pwa_installed', 'true');
     }
 
-    // --- 核心資料邏輯 ---
+    // 資料處理
     let usedCodes = JSON.parse(localStorage.getItem('ue_used') || '[]');
 
     fetch(csvUrl).then(res => res.text()).then(csv => {
@@ -138,11 +168,14 @@
         allData = rows.map(row => {
             const cols = row.split(',');
             if (cols.length < 4) return null;
-            return {
-                end: cols[0], label: cols[1], desc: cols[2], code: cols[3].trim(),
-                type: (cols[1]+cols[2]).includes('新') ? 'new' : (cols[1].includes('會員') ? 'vip' : 'hot')
-            };
-        }).filter(i => i);
+            const label = cols[1].trim(), desc = cols[2].trim();
+            let type = 'hot';
+            if (label.includes('新') || desc.includes('新戶')) type = 'new';
+            else if (label.includes('會員') || label.includes('優市')) type = 'vip';
+            else if (label.includes('卡') || label.includes('銀')) type = 'card';
+            
+            return { end: cols[0].trim(), label: label, desc: desc, code: cols[3].trim(), type: type };
+        }).filter(i => i && i.code && i.code.toLowerCase() !== '優惠碼');
         renderList();
     });
 
@@ -164,31 +197,55 @@
             return matchFilter && matchSearch;
         });
 
+        if (filtered.length === 0) {
+            container.innerHTML = '<div class="loading">沒有找到相關優惠</div>';
+            return;
+        }
+
         filtered.forEach(item => {
             const isUsed = usedCodes.includes(item.code);
             const card = document.createElement('div');
             card.className = `card ${isUsed ? 'used' : ''}`;
             card.innerHTML = `
-                <div class="card-info" onclick="copy('${item.code}')">
-                    <div class="code">${item.code}</div>
-                    <span class="desc">${item.desc}</span>
-                    <div style="font-size:11px; color:#666; margin-top:10px;">期限: ${item.end}</div>
+                <div class="card-content">
+                    <span class="code">${item.code}</span>
+                    <div class="desc">${item.desc}</div>
+                    <div class="meta">
+                        <span class="tag">${item.label}</span>
+                        <span>⏳ ${item.end}</span>
+                    </div>
                 </div>
-                <button class="giant-btn" onclick="copy('${item.code}')">${isUsed ? '已領取' : '複製代碼'}</button>
+                <button class="btn-copy" onclick="copy('${item.code}', this)">${isUsed ? '已領取' : '複製優惠碼'}</button>
             `;
             container.appendChild(card);
         });
     }
 
-    function copy(code) {
-        if (!usedCodes.includes(code)) {
-            usedCodes.push(code);
-            localStorage.setItem('ue_used', JSON.stringify(usedCodes));
-        }
+    function copy(code, btn) {
+        if (usedCodes.includes(code)) return;
+        
+        usedCodes.push(code);
+        localStorage.setItem('ue_used', JSON.stringify(usedCodes));
+        btn.innerText = '已領取';
+        btn.closest('.card').classList.add('used');
+        
         navigator.clipboard.writeText(code).then(() => {
-            renderList();
-            setTimeout(() => { window.location.href = "ubereats://promotions"; }, 500);
+            showToast();
+            setTimeout(() => { window.location.href = "ubereats://promotions"; }, 800);
         });
+    }
+
+    function resetApp() {
+        if (confirm("確定要清除所有紀錄並重置嗎？")) {
+            localStorage.clear();
+            location.reload();
+        }
+    }
+
+    function showToast() {
+        const t = document.getElementById('toast');
+        t.classList.add('show');
+        setTimeout(() => t.classList.remove('show'), 2000);
     }
 </script>
 </body>
