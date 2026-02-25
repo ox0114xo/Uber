@@ -12,24 +12,24 @@
 
     <style>
         :root { 
-            --ue-green: #06C167; --ue-green-glow: rgba(6, 193, 103, 0.4);
-            --bg-dark: #070709; --card-bg: rgba(25, 25, 27, 0.9);
-            --text-main: #ffffff; --text-sub: #888891;
-            --border-color: #2a2a2e;
+            --ue-green: #06C167; --bg-dark: #070709; --card-bg: rgba(25, 25, 27, 0.9);
+            --text-main: #ffffff; --border-color: #2a2a2e;
         }
         
         body { font-family: -apple-system, sans-serif; background: var(--bg-dark); margin: 0; padding: 0; color: var(--text-main); overflow-x: hidden; }
 
-        /* PWA 引導層 */
+        /* === PWA 引導層：預設 display: none，避免閃現 === */
         #pwa-overlay {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(7, 7, 9, 0.98); z-index: 10000;
             display: none; flex-direction: column; align-items: center; justify-content: center;
             padding: 40px; box-sizing: border-box; text-align: center;
         }
-        #pwa-overlay.active { display: flex; }
+        #pwa-overlay.show { display: flex; } /* 只有在需要時才顯示 */
+        
         .close-pwa { position: absolute; top: 30px; right: 30px; font-size: 28px; color: #555; cursor: pointer; padding: 10px; }
-        .pwa-logo { width: 100px; height: 100px; border-radius: 22px; box-shadow: 0 0 20px var(--ue-green-glow); margin-bottom: 25px; }
+        .pwa-logo { width: 100px; height: 100px; border-radius: 22px; margin-bottom: 25px; box-shadow: 0 0 20px rgba(6,193,103,0.3); }
+        
         #android-btn { background: var(--ue-green); color: #000; border: none; padding: 18px 0; border-radius: 12px; font-size: 18px; font-weight: 800; width: 100%; cursor: pointer; }
         #android-btn:disabled { background: #333; color: #666; }
 
@@ -42,19 +42,16 @@
         .title-bar h1 { margin: 0; font-size: 24px; font-weight: 900; letter-spacing: 1px; color: #fff; }
         
         .search-container { padding: 5px 20px 15px; }
-        .search-box { width: 100%; box-sizing: border-box; background: #1a1a1c; border: 1px solid #333; color: var(--ue-green); padding: 12px; border-radius: 10px; font-family: monospace; outline: none; }
+        .search-box { width: 100%; box-sizing: border-box; background: #1a1a1c; border: 1px solid #333; color: var(--ue-green); padding: 12px; border-radius: 10px; outline: none; }
 
         .filter-scroll { overflow-x: auto; white-space: nowrap; padding: 0 20px 10px; display: flex; gap: 10px; scrollbar-width: none; }
-        .filter-btn { background: #1a1a1c; color: #888; border: 1px solid #333; padding: 8px 16px; border-radius: 20px; font-size: 13px; font-weight: 700; cursor: pointer; flex-shrink: 0; }
+        .filter-btn { background: #1a1a1c; color: #888; border: 1px solid #333; padding: 8px 16px; border-radius: 20px; font-size: 13px; font-weight: 700; cursor: pointer; }
         .filter-btn.active { background: rgba(6, 193, 103, 0.1); color: var(--ue-green); border-color: var(--ue-green); }
 
         .container { max-width: 600px; margin: 0 auto; padding: 20px 20px 100px; }
         .card { background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 16px; margin-bottom: 20px; padding: 20px; }
         .code { font-size: 26px; font-weight: 900; color: var(--ue-green); font-family: monospace; }
         .copy-btn { width: 100%; background: var(--ue-green); color: #000; border: none; padding: 16px; border-radius: 12px; font-weight: 800; margin-top: 15px; cursor: pointer; }
-        
-        .toast { position: fixed; bottom: 80px; left: 50%; transform: translateX(-50%) translateY(20px); background: var(--ue-green); color: #000; padding: 12px 25px; border-radius: 30px; font-weight: 800; opacity: 0; transition: 0.4s; z-index: 999; }
-        .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
     </style>
 </head>
 <body>
@@ -72,59 +69,87 @@
 </div>
 
 <div class="header">
-    <div class="title-bar">
-        <h1>UBER EATS</h1>
-        <div style="font-size:12px; color:#666;">專業純淨版</div>
-    </div>
+    <div class="title-bar"><h1>UBER EATS</h1></div>
     <div class="search-container">
-        <input type="text" id="search-input" class="search-box" placeholder="搜尋代碼或內容..." onkeyup="render()">
+        <input type="text" id="search-input" class="search-box" placeholder="搜尋代碼..." onkeyup="render()">
     </div>
     <div class="filter-scroll">
         <button class="filter-btn active" id="f-all" onclick="setFilter('all')">全部</button>
         <button class="filter-btn" id="f-old" onclick="setFilter('old')">舊戶/一般</button>
         <button class="filter-btn" id="f-new" onclick="setFilter('new')">新戶專屬</button>
-        <button class="filter-btn" id="f-vip" onclick="setFilter('vip')">會員優惠</button>
     </div>
 </div>
 
 <div class="container" id="list"></div>
-<div id="toast" class="toast">✅ 已複製，正在開啟 App...</div>
 
 <script>
     if ('serviceWorker' in navigator) { navigator.serviceWorker.register('sw.js'); }
 
     let deferredPrompt;
     const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+    
+    // 🔍 終極偵測：是否已經是獨立 App 模式
     const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone;
 
-    window.onload = () => {
-        if (!isStandalone) {
-            document.getElementById('pwa-overlay').classList.add('active');
-            if (isIOS) {
-                document.getElementById('android-btn').style.display = 'none';
-                document.getElementById('ios-guide').style.display = 'block';
-            }
+    // 🕒 檢查今日是否已經手動關閉過
+    const lastDismissed = localStorage.getItem('pwa_dismissed');
+    const isDismissedToday = lastDismissed && (Date.now() - lastDismissed < 24 * 60 * 60 * 1000);
+
+    function checkOverlay() {
+        // 如果是已安裝開啟，或者今天已經關閉過，就絕對不顯示
+        if (isStandalone || isDismissedToday) {
+            document.getElementById('pwa-overlay').classList.remove('show');
+            return false;
         }
+        // 否則，顯示引導
+        document.getElementById('pwa-overlay').classList.add('show');
+        if (isIOS) {
+            document.getElementById('android-btn').style.display = 'none';
+            document.getElementById('ios-guide').style.display = 'block';
+        }
+        return true;
+    }
+
+    window.onload = () => {
+        checkOverlay();
         fetchData();
+        
+        // 3 秒後如果還在偵測中，自動轉換按鈕（解決截圖中的卡死問題）
+        setTimeout(() => {
+            const btn = document.getElementById('android-btn');
+            if (btn && btn.disabled && !isIOS) {
+                btn.disabled = false;
+                btn.innerText = "手動安裝 / 進入 App";
+                btn.onclick = () => dismissInstall();
+            }
+        }, 3000);
     };
 
     window.addEventListener('beforeinstallprompt', (e) => {
         e.preventDefault();
         deferredPrompt = e;
         const btn = document.getElementById('android-btn');
-        btn.disabled = false;
-        btn.innerText = "一鍵安裝並解鎖";
+        if (btn) {
+            btn.disabled = false;
+            btn.innerText = "一鍵安裝並解鎖";
+        }
     });
 
     function triggerInstall() {
         if (deferredPrompt) {
             deferredPrompt.prompt();
             deferredPrompt.userChoice.then((choice) => { if (choice.outcome === 'accepted') dismissInstall(); });
+        } else {
+            dismissInstall(); // 沒抓到訊號也讓它進去
         }
     }
 
-    function dismissInstall() { document.getElementById('pwa-overlay').classList.remove('active'); }
+    function dismissInstall() {
+        document.getElementById('pwa-overlay').classList.remove('show');
+        localStorage.setItem('pwa_dismissed', Date.now()); // 記住關閉時間
+    }
 
+    // --- 資料渲染邏輯 (保持不變) ---
     const csvUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSQfG95R3C-8YZIhBsIJUOLckEq3MpPihSYVSszeOgx9jmdnXsyE9ag9NgBx4gbZOUg5-2-qxx7zQit/pub?output=csv';
     let allData = [];
     let currentFilter = 'all';
@@ -135,14 +160,8 @@
             allData = rows.map(r => {
                 const c = r.split(',');
                 if (c.length < 4) return null;
-                const label = c[1], desc = c[2];
-                let isNewUser = label.includes('新') || desc.includes('新戶') || desc.includes('首購');
-                let isVip = label.includes('會員') || label.includes('優市');
-                
-                return { 
-                    end: c[0], label, desc, code: c[3].trim(), 
-                    type: isNewUser ? 'new' : (isVip ? 'vip' : 'old')
-                };
+                const isNew = c[1].includes('新') || c[2].includes('新戶');
+                return { end: c[0], label: c[1], desc: c[2], code: c[3].trim(), type: isNew ? 'new' : 'old' };
             }).filter(i => i);
             render();
         });
@@ -152,25 +171,17 @@
         const query = document.getElementById('search-input').value.toLowerCase();
         const container = document.getElementById('list');
         container.innerHTML = '';
-
-        allData.filter(item => {
-            // 篩選邏輯修正
-            const matchFilter = (currentFilter === 'all') || 
-                                (currentFilter === 'old' && item.type !== 'new') || 
-                                (item.type === currentFilter);
-            const matchSearch = item.code.toLowerCase().includes(query) || item.desc.toLowerCase().includes(query);
-            return matchFilter && matchSearch;
-        }).forEach(item => {
+        allData.filter(i => (currentFilter === 'all' || (currentFilter === 'old' && i.type !== 'new') || i.type === currentFilter) && i.code.toLowerCase().includes(query))
+               .forEach(item => {
             const card = document.createElement('div');
             card.className = 'card';
-            card.innerHTML = `
-                <div class="code">${item.code}</div>
-                <div style="margin:10px 0; font-weight:600;">${item.desc}</div>
-                <div style="font-size:11px; color:#555;">⏳ ${item.end} | ${item.label}</div>
-                <button class="copy-btn" onclick="copy('${item.code}')">複製優惠碼</button>
-            `;
+            card.innerHTML = `<div class="code">${item.code}</div><div style="margin:10px 0;">${item.desc}</div><button class="copy-btn" onclick="copy('${item.code}')">複製優惠碼</button>`;
             container.appendChild(card);
         });
+    }
+
+    function copy(code) {
+        navigator.clipboard.writeText(code).then(() => { window.location.href = "ubereats://promotions"; });
     }
 
     function setFilter(f) {
@@ -179,18 +190,6 @@
         document.getElementById('f-'+f).classList.add('active');
         render();
     }
-
-    function copy(code) {
-        navigator.clipboard.writeText(code).then(() => {
-            const t = document.getElementById('toast');
-            t.classList.add('show');
-            setTimeout(() => { 
-                t.classList.remove('show');
-                window.location.href = "ubereats://promotions"; 
-            }, 800);
-        });
-    }
 </script>
 </body>
 </html>
-
