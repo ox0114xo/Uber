@@ -1,17 +1,15 @@
-// 安裝 Service Worker
+// Service Worker 核心邏輯
+const CACHE_NAME = 'ue-cache-v1';
+
 self.addEventListener('install', (event) => {
     self.skipWaiting();
-    console.log('Service Worker: 已安裝');
 });
 
-// 啟用 Service Worker
 self.addEventListener('activate', (event) => {
-    event.waitUntil(self.clients.claim());
-    console.log('Service Worker: 已啟用');
+    event.waitUntil(clients.claim());
 });
 
-// 攔截請求 (確保 PWA 離線可用性，滿足 Chrome 安裝要求)
+// 必須有 fetch 事件，安裝視窗才會彈出
 self.addEventListener('fetch', (event) => {
     event.respondWith(fetch(event.request));
 });
-
