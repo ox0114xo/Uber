@@ -1,8 +1,7 @@
 {
-  "name": "Uber Eats 優惠終端",
+  "name": "Uber Eats 優惠",
   "short_name": "UE優惠",
-  "description": "最快的 Uber Eats 優惠碼查詢工具",
-  "start_url": "/index.html",
+  "start_url": "./index.html",
   "display": "standalone",
   "background_color": "#ffffff",
   "theme_color": "#06C167",
