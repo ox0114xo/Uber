@@ -1,5 +1,3 @@
-</body>
-</html>
 <!DOCTYPE html>
 <html lang="zh-TW">
 <head>
@@ -7,53 +5,36 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Uber Eats 優惠</title>
     
+    <link rel="manifest" href="data:application/manifest+json,{'name':'Uber Eats 優惠','short_name':'UE優惠','start_url':'.','display':'standalone','background_color':'#ffffff','theme_color':'#06C167','icons':[{'src':'image_6.png','sizes':'512x512','type':'image/png'}]}">
     <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="UE優惠碼">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black">
     <link rel="apple-touch-icon" href="image_6.png">
     
     <style>
-        :root { 
-            --ue-green: #06C167; --ue-black: #000000; --ue-white: #FFFFFF; 
-            --ue-gray-bg: #F6F6F6; --ue-gray-text: #545454;
-        }
-        
-        body { 
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-            background-color: var(--ue-white); margin: 0; padding: 0; overflow: hidden;
-        }
+        :root { --ue-green: #06C167; --ue-black: #000000; --ue-white: #FFFFFF; --ue-gray-bg: #F6F6F6; }
+        body { font-family: -apple-system, sans-serif; background-color: var(--ue-white); margin: 0; padding: 0; overflow: hidden; }
 
-        /* === 強制安裝層 (不給關閉按鈕) === */
+        /* 強制鎖定層 */
         #pwa-overlay {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: #FFFFFF; z-index: 10000;
             display: flex; flex-direction: column; align-items: center; justify-content: center;
-            padding: 40px; box-sizing: border-box;
+            padding: 40px; box-sizing: border-box; text-align: center;
         }
         #pwa-overlay.hidden { display: none; }
-        
-        /* 這裡徹底刪除了 .close-overlay (X按鈕) */
-
         .pwa-logo { width: 100px; height: 100px; border-radius: 22px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); margin-bottom: 25px; }
         .pwa-title { font-size: 24px; font-weight: 800; margin-bottom: 15px; color: #000; }
-        .pwa-desc { color: var(--ue-gray-text); font-size: 15px; margin-bottom: 40px; line-height: 1.6; text-align: center; }
-
-        /* 安卓強制按鈕 */
+        
+        /* 安卓發光按鈕 */
         #android-btn { 
             background: var(--ue-black); color: white; border: none; 
             padding: 18px 0; border-radius: 12px; font-size: 18px; font-weight: 700; width: 100%;
-            cursor: pointer;
+            cursor: pointer; box-shadow: 0 0 20px rgba(6,193,103,0.3);
         }
 
-        /* 蘋果教學區 */
         #ios-guide { display: none; width: 100%; }
-        .ios-step { 
-            background: var(--ue-gray-bg); padding: 16px; border-radius: 12px; 
-            display: flex; align-items: center; gap: 15px; margin-bottom: 12px; text-align: left;
-        }
-        .ios-icon { width: 30px; height: 30px; }
+        .ios-step { background: var(--ue-gray-bg); padding: 16px; border-radius: 12px; display: flex; align-items: center; gap: 15px; margin-bottom: 12px; text-align: left; }
 
-        /* 主介面內容 (預設隱藏直到安裝) */
         #main-content { display: none; }
         .header { position: sticky; top: 0; background: #fff; z-index: 100; border-bottom: 1px solid #eee; padding: 15px 20px; }
         .container { padding: 20px; background: var(--ue-gray-bg); min-height: 100vh; }
@@ -67,49 +48,51 @@
 <div id="pwa-overlay">
     <img src="image_6.png" class="pwa-logo" alt="Logo">
     <div class="pwa-title">系統鎖定</div>
-    <div class="pwa-desc">本工具僅限安裝於桌面後使用。<br>安裝後可獲得全螢幕體驗並解鎖優惠碼。</div>
+    <p style="color:#666; margin-bottom:40px;">本工具僅限安裝至桌面後解鎖。<br>點擊下方按鈕一鍵完成安裝。</p>
 
-    <button id="android-btn" onclick="installAndroid()">一鍵安裝並解鎖</button>
+    <button id="android-btn" onclick="triggerAndroidInstall()">一鍵安裝並解鎖</button>
 
     <div id="ios-guide">
-        <div class="ios-step">
-            <img src="https://img.icons8.com/ios/50/000000/share-rounded.png" class="ios-icon">
-            <span>1. 點擊瀏覽器下方的<strong>「分享」</strong>按鈕</span>
-        </div>
-        <div class="ios-step">
-            <img src="https://img.icons8.com/ios/50/000000/plus-math.png" class="ios-icon">
-            <span>2. 向上滑動點擊<strong>「加入主螢幕」</strong></span>
-        </div>
-        <div style="font-size: 12px; color: #ff3b30; margin-top: 10px;">* 完成安裝後從桌面打開即可解鎖</div>
+        <div class="ios-step"><span>1. 點擊瀏覽器下方<strong>「分享」</strong></span></div>
+        <div class="ios-step"><span>2. 點擊<strong>「加入主螢幕」</strong></span></div>
     </div>
 </div>
 
 <div id="main-content">
-    <div class="header">
-        <h1 style="margin:0; font-size:22px;">Uber Eats 優惠</h1>
-    </div>
-    <div class="container" id="list">
-        </div>
+    <div class="header"><h1 style="margin:0; font-size:22px;">Uber Eats 優惠</h1></div>
+    <div class="container" id="list"></div>
 </div>
 
 <script>
+    // --- 1. 核心 Service Worker 註冊 (安卓安裝必備) ---
+    if ('serviceWorker' in navigator) {
+        const swCode = `
+            self.addEventListener('install', e => self.skipWaiting());
+            self.addEventListener('fetch', e => e.respondWith(fetch(e.request)));
+        `;
+        const blob = new Blob([swCode], {type: 'application/javascript'});
+        const swUrl = URL.createObjectURL(blob);
+        navigator.serviceWorker.register(swUrl);
+    }
+
     const csvUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSQfG95R3C-8YZIhBsIJUOLckEq3MpPihSYVSszeOgx9jmdnXsyE9ag9NgBx4gbZOUg5-2-qxx7zQit/pub?output=csv';
     let deferredPrompt;
-    let allData = [];
+    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+    const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone;
 
-    // 系統狀態偵測
-    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
-    const isStandalone = window.navigator.standalone || window.matchMedia('(display-mode: standalone)').matches;
+    // --- 2. 監聽安裝事件 (這是真正的自動觸發) ---
+    window.addEventListener('beforeinstallprompt', (e) => {
+        e.preventDefault();
+        deferredPrompt = e; // 攔截系統視窗，存起來等按鈕按
+    });
 
     window.onload = () => {
         if (isStandalone) {
-            // 已安裝模式：解除鎖定
             document.getElementById('pwa-overlay').style.display = 'none';
             document.getElementById('main-content').style.display = 'block';
             document.body.style.overflow = 'auto';
             fetchData();
         } else {
-            // 未安裝：鎖定畫面
             document.body.style.overflow = 'hidden';
             if (isIOS) {
                 document.getElementById('android-btn').style.display = 'none';
@@ -118,57 +101,38 @@
         }
     };
 
-    // 安卓安裝邏輯
-    window.addEventListener('beforeinstallprompt', (e) => {
-        e.preventDefault();
-        deferredPrompt = e;
-    });
-
-    function installAndroid() {
+    function triggerAndroidInstall() {
         if (deferredPrompt) {
+            // 這裡會直接彈出安卓系統的安裝對話框
             deferredPrompt.prompt();
             deferredPrompt.userChoice.then((choice) => {
                 if (choice.outcome === 'accepted') {
-                    console.log('User accepted the install prompt');
+                    alert("安裝中...請稍後從桌面打開。");
                 }
             });
         } else {
-            alert("系統偵測中，請確保您是使用 Chrome 瀏覽器，並點擊右上角三點選單選擇「安裝應用程式」。");
+            // 如果瀏覽器還沒準備好，通常是因為沒用 Chrome 或者網頁剛載入
+            alert("系統初始化中，請確保使用 Chrome 瀏覽器並重整頁面後再試。");
         }
     }
 
-    // 抓取資料
     function fetchData() {
         fetch(csvUrl).then(res => res.text()).then(csv => {
             const rows = csv.split('\n').slice(1);
-            allData = rows.map(row => {
+            const container = document.getElementById('list');
+            rows.forEach(row => {
                 const cols = row.split(',');
-                if (cols.length < 4) return null;
-                return { end: cols[0], label: cols[1], desc: cols[2], code: cols[3].trim() };
-            }).filter(i => i && i.code && i.code.toLowerCase() !== '優惠碼');
-            render();
-        });
-    }
-
-    function render() {
-        const container = document.getElementById('list');
-        container.innerHTML = '';
-        allData.forEach(item => {
-            const card = document.createElement('div');
-            card.className = 'card';
-            card.innerHTML = `
-                <span class="code">${item.code}</span>
-                <div style="font-weight:700; margin-bottom:5px;">${item.desc}</div>
-                <div style="font-size:12px; color:#999;">${item.label} | 期限: ${item.end}</div>
-                <button class="copy-btn" onclick="copy('${item.code}')">複製優惠碼</button>
-            `;
-            container.appendChild(card);
+                if (cols.length < 4) return;
+                const card = document.createElement('div');
+                card.className = 'card';
+                card.innerHTML = `<span class="code">${cols[3]}</span><div>${cols[2]}</div><button class="copy-btn" onclick="copy('${cols[3]}')">複製並跳轉</button>`;
+                container.appendChild(card);
+            });
         });
     }
 
     function copy(code) {
         navigator.clipboard.writeText(code).then(() => {
-            alert('代碼已複製！即將跳轉 Uber Eats');
             window.location.href = "ubereats://promotions";
         });
     }
