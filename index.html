@@ -15,89 +15,56 @@
             --ue-green: #06C167; --ue-green-glow: rgba(6, 193, 103, 0.4);
             --bg-dark: #070709; --card-bg: rgba(25, 25, 27, 0.9);
             --text-main: #ffffff; --text-sub: #888891;
-            --border-color: #2a2a2e; --danger: #FF3B30;
-            --gold: #FFD700; --gold-glow: rgba(255, 215, 0, 0.5);
+            --border-color: #2a2a2e;
         }
         
-        body { 
-            font-family: -apple-system, sans-serif; background: var(--bg-dark); 
-            margin: 0; padding: 0; color: var(--text-main); overflow-x: hidden;
-        }
+        body { font-family: -apple-system, sans-serif; background: var(--bg-dark); margin: 0; padding: 0; color: var(--text-main); overflow-x: hidden; }
 
-        /* === PWA 安裝引導層 (含X按鈕) === */
+        /* PWA 引導層 */
         #pwa-overlay {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(7, 7, 9, 0.98); z-index: 10000;
-            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            display: none; flex-direction: column; align-items: center; justify-content: center;
             padding: 40px; box-sizing: border-box; text-align: center;
         }
-        #pwa-overlay.hidden { display: none; }
-        .close-pwa { position: absolute; top: 30px; right: 30px; font-size: 28px; color: #555; cursor: pointer; }
-
+        #pwa-overlay.active { display: flex; }
+        .close-pwa { position: absolute; top: 30px; right: 30px; font-size: 28px; color: #555; cursor: pointer; padding: 10px; }
         .pwa-logo { width: 100px; height: 100px; border-radius: 22px; box-shadow: 0 0 20px var(--ue-green-glow); margin-bottom: 25px; }
-        #android-btn { 
-            background: var(--ue-green); color: #000; border: none; padding: 18px 0; 
-            border-radius: 12px; font-size: 18px; font-weight: 800; width: 100%; cursor: pointer;
-        }
+        #android-btn { background: var(--ue-green); color: #000; border: none; padding: 18px 0; border-radius: 12px; font-size: 18px; font-weight: 800; width: 100%; cursor: pointer; }
         #android-btn:disabled { background: #333; color: #666; }
 
         #ios-guide { display: none; width: 100%; text-align: left; }
         .ios-step { background: #1a1a1c; padding: 15px; border-radius: 12px; margin-bottom: 10px; font-size: 14px; display: flex; gap: 10px; }
 
-        /* === Matrix & Rift 特效層 === */
-        #matrix-canvas { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 1; opacity: 0; pointer-events: none; transition: 1s; }
-        #matrix-canvas.active { opacity: 0.3; }
-        body.rift-mode .card { transform: perspective(1000px) rotateX(10deg); box-shadow: 0 20px 50px var(--ue-green-glow); }
-
-        /* === 主介面 === */
+        /* 主介面 */
         .header { position: sticky; top: 0; background: rgba(7, 7, 9, 0.9); backdrop-filter: blur(15px); z-index: 100; border-bottom: 1px solid var(--border-color); padding-bottom: 15px; }
         .title-bar { padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; }
-        .title-bar h1 { margin: 0; font-size: 24px; font-weight: 900; letter-spacing: 1px; color: #fff; cursor: pointer; }
-        .pulse-dot { width: 8px; height: 8px; background: var(--ue-green); border-radius: 50%; display: inline-block; margin-left: 8px; animation: pulse 1.5s infinite; }
-        @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.3; } 100% { opacity: 1; } }
-
+        .title-bar h1 { margin: 0; font-size: 24px; font-weight: 900; letter-spacing: 1px; color: #fff; }
+        
         .search-container { padding: 5px 20px 15px; }
         .search-box { width: 100%; box-sizing: border-box; background: #1a1a1c; border: 1px solid #333; color: var(--ue-green); padding: 12px; border-radius: 10px; font-family: monospace; outline: none; }
 
         .filter-scroll { overflow-x: auto; white-space: nowrap; padding: 0 20px 10px; display: flex; gap: 10px; scrollbar-width: none; }
-        .filter-btn { background: #1a1a1c; color: #888; border: 1px solid #333; padding: 8px 16px; border-radius: 20px; font-size: 13px; font-weight: 700; cursor: pointer; }
+        .filter-btn { background: #1a1a1c; color: #888; border: 1px solid #333; padding: 8px 16px; border-radius: 20px; font-size: 13px; font-weight: 700; cursor: pointer; flex-shrink: 0; }
         .filter-btn.active { background: rgba(6, 193, 103, 0.1); color: var(--ue-green); border-color: var(--ue-green); }
 
-        .container { max-width: 600px; margin: 0 auto; padding: 20px 20px 100px; position: relative; z-index: 10; }
-
-        /* === 卡片樣式 === */
-        .card { background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 16px; margin-bottom: 20px; overflow: hidden; transition: 0.4s; position: relative; }
-        .card.ur-tier { border-color: var(--gold); animation: urGlow 2s infinite alternate; }
-        @keyframes urGlow { from { box-shadow: 0 0 5px var(--gold-glow); } to { box-shadow: 0 0 20px var(--gold); } }
-        .card.used { opacity: 0.3; filter: grayscale(1); }
-
-        .card-info { padding: 20px; cursor: pointer; }
+        .container { max-width: 600px; margin: 0 auto; padding: 20px 20px 100px; }
+        .card { background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 16px; margin-bottom: 20px; padding: 20px; }
         .code { font-size: 26px; font-weight: 900; color: var(--ue-green); font-family: monospace; }
-        .ur-tier .code { color: var(--gold); }
-        .desc { font-size: 16px; font-weight: 600; margin: 10px 0; color: #eee; }
+        .copy-btn { width: 100%; background: var(--ue-green); color: #000; border: none; padding: 16px; border-radius: 12px; font-weight: 800; margin-top: 15px; cursor: pointer; }
         
-        .giant-btn { width: 100%; background: var(--ue-green); color: #000; border: none; padding: 16px; font-size: 16px; font-weight: 800; cursor: pointer; }
-        .ur-tier .giant-btn { background: var(--gold); }
-
-        .footer-reset { padding: 40px; text-align: center; opacity: 0.5; }
-        .reset-trigger { background: transparent; color: #555; border: 1px dashed #333; padding: 10px 20px; border-radius: 10px; cursor: pointer; }
-
         .toast { position: fixed; bottom: 80px; left: 50%; transform: translateX(-50%) translateY(20px); background: var(--ue-green); color: #000; padding: 12px 25px; border-radius: 30px; font-weight: 800; opacity: 0; transition: 0.4s; z-index: 999; }
         .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
     </style>
 </head>
 <body>
 
-<canvas id="matrix-canvas"></canvas>
-
 <div id="pwa-overlay">
     <div class="close-pwa" onclick="dismissInstall()">✕</div>
     <img src="image_6.png" class="pwa-logo">
     <h2 style="margin:0 0 10px;">安裝至桌面</h2>
     <p style="color:#888; margin-bottom:35px; line-height:1.6;">安裝後即可解鎖全螢幕模式<br>並獲取最新優惠代碼。</p>
-
     <button id="android-btn" onclick="triggerInstall()" disabled>偵測環境中...</button>
-
     <div id="ios-guide">
         <div class="ios-step">1. 點擊瀏覽器下方<strong>「分享」</strong>按鈕</div>
         <div class="ios-step">2. 點擊<strong>「加入主螢幕」</strong>即可</div>
@@ -106,42 +73,40 @@
 
 <div class="header">
     <div class="title-bar">
-        <h1 onclick="handleGodMode()">UBER EATS<span class="pulse-dot"></span></h1>
-        <div style="font-size:12px; color:#666;">已領取 <span id="stats-count" style="color:var(--ue-green)">0</span></div>
+        <h1>UBER EATS</h1>
+        <div style="font-size:12px; color:#666;">專業純淨版</div>
     </div>
-    
     <div class="search-container">
-        <input type="text" id="search-input" class="search-box" placeholder="> 輸入指令或搜尋代碼..." onkeyup="handleSearch(event)">
+        <input type="text" id="search-input" class="search-box" placeholder="搜尋代碼或內容..." onkeyup="render()">
     </div>
-
     <div class="filter-scroll">
-        <button class="filter-btn active" id="f-all" onclick="setFilter('all')">全部 (<span id="count-all">0</span>)</button>
-        <button class="filter-btn" id="f-hot" onclick="setFilter('hot')">一般</button>
-        <button class="filter-btn" id="f-vip" onclick="setFilter('vip')">會員</button>
-        <button class="filter-btn" id="f-new" onclick="setFilter('new')">新戶</button>
-        <button class="filter-btn" id="f-card" onclick="setFilter('card')">金融</button>
+        <button class="filter-btn active" id="f-all" onclick="setFilter('all')">全部</button>
+        <button class="filter-btn" id="f-old" onclick="setFilter('old')">舊戶/一般</button>
+        <button class="filter-btn" id="f-new" onclick="setFilter('new')">新戶專屬</button>
+        <button class="filter-btn" id="f-vip" onclick="setFilter('vip')">會員優惠</button>
     </div>
 </div>
 
-<div class="container">
-    <div id="list"></div>
-    <div class="footer-reset">
-        <button class="reset-trigger" onclick="resetAll()">格式化記憶體紀錄</button>
-    </div>
-</div>
-
-<div id="toast" class="toast">⚡ 代碼解析成功</div>
+<div class="container" id="list"></div>
+<div id="toast" class="toast">✅ 已複製，正在開啟 App...</div>
 
 <script>
-    // --- 1. Service Worker 註冊 ---
-    if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.register('sw.js');
-    }
+    if ('serviceWorker' in navigator) { navigator.serviceWorker.register('sw.js'); }
 
-    // --- 2. PWA 邏輯 ---
     let deferredPrompt;
     const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
     const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone;
+
+    window.onload = () => {
+        if (!isStandalone) {
+            document.getElementById('pwa-overlay').classList.add('active');
+            if (isIOS) {
+                document.getElementById('android-btn').style.display = 'none';
+                document.getElementById('ios-guide').style.display = 'block';
+            }
+        }
+        fetchData();
+    };
 
     window.addEventListener('beforeinstallprompt', (e) => {
         e.preventDefault();
@@ -151,52 +116,34 @@
         btn.innerText = "一鍵安裝並解鎖";
     });
 
-    window.onload = () => {
-        if (isStandalone) {
-            document.getElementById('pwa-overlay').classList.add('hidden');
-        } else {
-            if (isIOS) {
-                document.getElementById('android-btn').style.display = 'none';
-                document.getElementById('ios-guide').style.display = 'block';
-            }
-        }
-        fetchData();
-    };
-
     function triggerInstall() {
         if (deferredPrompt) {
             deferredPrompt.prompt();
-            deferredPrompt.userChoice.then((choice) => {
-                if (choice.outcome === 'accepted') dismissInstall();
-            });
+            deferredPrompt.userChoice.then((choice) => { if (choice.outcome === 'accepted') dismissInstall(); });
         }
     }
 
-    function dismissInstall() {
-        document.getElementById('pwa-overlay').classList.add('hidden');
-    }
+    function dismissInstall() { document.getElementById('pwa-overlay').classList.remove('active'); }
 
-    // --- 3. 核心功能邏輯 ---
     const csvUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSQfG95R3C-8YZIhBsIJUOLckEq3MpPihSYVSszeOgx9jmdnXsyE9ag9NgBx4gbZOUg5-2-qxx7zQit/pub?output=csv';
     let allData = [];
     let currentFilter = 'all';
-    let usedCodes = JSON.parse(localStorage.getItem('ue_used') || '[]');
-    let godModeClicks = 0;
-    let isMatrix = false;
 
     function fetchData() {
-        fetch(csvUrl).then(res => res.text()).then(csvText => {
-            const rows = csvText.replace(/\r/g, '').split('\n').slice(1);
-            allData = rows.map(row => {
-                const cols = row.split(',');
-                if (cols.length < 4) return null;
-                const label = cols[1], desc = cols[2];
-                let type = 'hot';
-                if (label.includes('新') || desc.includes('新戶')) type = 'new';
-                else if (label.includes('會員') || label.includes('優市')) type = 'vip';
-                else if (label.includes('卡') || label.includes('銀')) type = 'card';
-                return { end: cols[0], label, desc, code: cols[3].trim(), type, isUR: desc.includes('免運') || desc.includes('150') };
-            }).filter(i => i && i.code && i.code !== '優惠碼');
+        fetch(csvUrl).then(res => res.text()).then(csv => {
+            const rows = csv.replace(/\r/g, '').split('\n').slice(1);
+            allData = rows.map(r => {
+                const c = r.split(',');
+                if (c.length < 4) return null;
+                const label = c[1], desc = c[2];
+                let isNewUser = label.includes('新') || desc.includes('新戶') || desc.includes('首購');
+                let isVip = label.includes('會員') || label.includes('優市');
+                
+                return { 
+                    end: c[0], label, desc, code: c[3].trim(), 
+                    type: isNewUser ? 'new' : (isVip ? 'vip' : 'old')
+                };
+            }).filter(i => i);
             render();
         });
     }
@@ -206,40 +153,23 @@
         const container = document.getElementById('list');
         container.innerHTML = '';
 
-        const filtered = allData.filter(item => {
-            const matchFilter = currentFilter === 'all' || item.type === currentFilter;
+        allData.filter(item => {
+            // 篩選邏輯修正
+            const matchFilter = (currentFilter === 'all') || 
+                                (currentFilter === 'old' && item.type !== 'new') || 
+                                (item.type === currentFilter);
             const matchSearch = item.code.toLowerCase().includes(query) || item.desc.toLowerCase().includes(query);
             return matchFilter && matchSearch;
-        });
-
-        document.getElementById('count-all').innerText = allData.length;
-        document.getElementById('stats-count').innerText = usedCodes.length;
-
-        filtered.forEach(item => {
-            const isUsed = usedCodes.includes(item.code);
+        }).forEach(item => {
             const card = document.createElement('div');
-            card.className = `card ${isUsed ? 'used' : ''} ${item.isUR && !isUsed ? 'ur-tier' : ''}`;
+            card.className = 'card';
             card.innerHTML = `
-                <div class="card-info" onclick="copy('${item.code}')">
-                    <div class="code">${item.code}</div>
-                    <div class="desc">${item.desc}</div>
-                    <div style="font-size:11px; color:#555;">⏳ ${item.end} | ${item.label}</div>
-                </div>
-                <button class="giant-btn" onclick="copy('${item.code}')">${isUsed ? '防護解除' : '一鍵領取'}</button>
+                <div class="code">${item.code}</div>
+                <div style="margin:10px 0; font-weight:600;">${item.desc}</div>
+                <div style="font-size:11px; color:#555;">⏳ ${item.end} | ${item.label}</div>
+                <button class="copy-btn" onclick="copy('${item.code}')">複製優惠碼</button>
             `;
             container.appendChild(card);
-        });
-    }
-
-    function copy(code) {
-        if (!usedCodes.includes(code)) {
-            usedCodes.push(code);
-            localStorage.setItem('ue_used', JSON.stringify(usedCodes));
-        }
-        navigator.clipboard.writeText(code).then(() => {
-            showToast('⚡ 代碼解析完成，跳轉中...');
-            render();
-            setTimeout(() => { window.location.href = "ubereats://promotions"; }, 600);
         });
     }
 
@@ -250,71 +180,17 @@
         render();
     }
 
-    function handleSearch(e) {
-        if (e.key === 'Enter') {
-            const val = document.getElementById('search-input').value;
-            if (val === '/matrix') {
-                isMatrix = !isMatrix;
-                document.getElementById('matrix-canvas').classList.toggle('active');
-                if(isMatrix) startMatrix();
-                document.getElementById('search-input').value = '';
-            }
-            if (val === '/rift') {
-                document.body.classList.toggle('rift-mode');
-                document.getElementById('search-input').value = '';
-            }
-        }
-        render();
-    }
-
-    function handleGodMode() {
-        godModeClicks++;
-        if (godModeClicks >= 5) {
-            showToast('🔓 進入上帝模式');
-            usedCodes = []; // 視覺上暫時清除
-            render();
-            godModeClicks = 0;
-        }
-    }
-
-    function resetAll() {
-        if(confirm("確定要格式化記憶體嗎？")) {
-            localStorage.clear();
-            location.reload();
-        }
-    }
-
-    function showToast(msg) {
-        const t = document.getElementById('toast');
-        t.innerText = msg; t.classList.add('show');
-        setTimeout(() => t.classList.remove('show'), 2000);
-    }
-
-    // Matrix Rain
-    function startMatrix() {
-        const canvas = document.getElementById('matrix-canvas');
-        const ctx = canvas.getContext('2d');
-        canvas.width = window.innerWidth; canvas.height = window.innerHeight;
-        const letters = '01'.split('');
-        const fontSize = 16;
-        const columns = canvas.width / fontSize;
-        const drops = Array(Math.floor(columns)).fill(1);
-        function draw() {
-            if(!isMatrix) return;
-            ctx.fillStyle = 'rgba(0,0,0,0.05)';
-            ctx.fillRect(0,0,canvas.width,canvas.height);
-            ctx.fillStyle = '#0F0';
-            ctx.font = fontSize + 'px monospace';
-            drops.forEach((y, i) => {
-                const text = letters[Math.floor(Math.random()*letters.length)];
-                ctx.fillText(text, i*fontSize, y*fontSize);
-                if (y*fontSize > canvas.height && Math.random() > 0.975) drops[i] = 0;
-                drops[i]++;
-            });
-            requestAnimationFrame(draw);
-        }
-        draw();
+    function copy(code) {
+        navigator.clipboard.writeText(code).then(() => {
+            const t = document.getElementById('toast');
+            t.classList.add('show');
+            setTimeout(() => { 
+                t.classList.remove('show');
+                window.location.href = "ubereats://promotions"; 
+            }, 800);
+        });
     }
 </script>
 </body>
 </html>
+
