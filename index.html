@@ -23,24 +23,41 @@
         .title-bar { padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; }
         .title-bar h1 { margin: 0; font-size: 24px; font-weight: 900; letter-spacing: 1px; color: #fff; }
         
-        .search-container { padding: 5px 20px 15px; }
+        .search-container { padding: 5px 20px 10px; }
         .search-box { width: 100%; box-sizing: border-box; background: #1a1a1c; border: 1px solid #333; color: var(--ue-green); padding: 12px; border-radius: 10px; outline: none; font-size: 16px; }
+
+        /* 開關與分類列 */
+        .toggle-row { display: flex; align-items: center; justify-content: flex-end; padding: 0 20px 10px; font-size: 13px; color: #888; font-weight: 600; }
+        .switch { position: relative; display: inline-block; width: 40px; height: 22px; margin-left: 10px; }
+        .switch input { opacity: 0; width: 0; height: 0; }
+        .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #333; transition: .3s; border-radius: 22px; }
+        .slider:before { position: absolute; content: ""; height: 16px; width: 16px; left: 3px; bottom: 3px; background-color: white; transition: .3s; border-radius: 50%; }
+        input:checked + .slider { background-color: var(--ue-green); }
+        input:checked + .slider:before { transform: translateX(18px); }
 
         .filter-scroll { overflow-x: auto; white-space: nowrap; padding: 0 20px 10px; display: flex; gap: 10px; scrollbar-width: none; }
         .filter-btn { background: #1a1a1c; color: #888; border: 1px solid #333; padding: 8px 16px; border-radius: 20px; font-size: 13px; font-weight: 700; cursor: pointer; }
         .filter-btn.active { background: rgba(6, 193, 103, 0.1); color: var(--ue-green); border-color: var(--ue-green); }
 
         .container { max-width: 600px; margin: 0 auto; padding: 20px; padding-bottom: 100px; }
-        .card { background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 16px; margin-bottom: 20px; padding: 20px; }
+        
+        /* 卡片與已領取狀態 */
+        .card { background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 16px; margin-bottom: 20px; padding: 20px; transition: 0.3s; }
+        .card.used { opacity: 0.4; filter: grayscale(1); border-color: #222; }
+        .card.used .copy-btn { background: #333; color: #888; pointer-events: none; }
+
         .code { font-size: 26px; font-weight: 900; color: var(--ue-green); font-family: monospace; }
-        .copy-btn { width: 100%; background: var(--ue-green); color: #000; border: none; padding: 16px; border-radius: 12px; font-weight: 800; margin-top: 15px; cursor: pointer; }
+        .copy-btn { width: 100%; background: var(--ue-green); color: #000; border: none; padding: 16px; border-radius: 12px; font-weight: 800; margin-top: 15px; cursor: pointer; transition: 0.3s; }
+        
+        /* 重置按鈕 */
+        .reset-btn { display: block; width: 100%; padding: 15px; margin-top: 30px; background: transparent; border: 1px dashed #333; color: #666; border-radius: 12px; cursor: pointer; font-size: 14px; text-align: center; transition: 0.3s; }
+        .reset-btn:active { background: #111; color: #aaa; }
 
         /* === 隱藏的引導層：預設完全不顯示 === */
         #pwa-overlay {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(7, 7, 9, 0.98); z-index: 10000;
-            display: none; /* 核心：預設隱藏 */
-            flex-direction: column; align-items: center; justify-content: center;
+            display: none; flex-direction: column; align-items: center; justify-content: center;
             padding: 40px; box-sizing: border-box; text-align: center;
             animation: fadeIn 0.5s ease;
         }
@@ -60,10 +77,22 @@
 <body>
 
 <div class="header">
-    <div class="title-bar"><h1>UBER EATS</h1></div>
+    <div class="title-bar">
+        <h1>UBER EATS</h1>
+        <div style="font-size:12px; color:#666;">已領取 <span id="used-count" style="color:var(--ue-green); font-weight:bold;">0</span></div>
+    </div>
     <div class="search-container">
         <input type="text" id="search-input" class="search-box" placeholder="搜尋代碼或內容..." onkeyup="render()">
     </div>
+    
+    <div class="toggle-row">
+        <span>隱藏已領取</span>
+        <label class="switch">
+            <input type="checkbox" id="hide-used-checkbox" onchange="toggleHideUsed()">
+            <span class="slider"></span>
+        </label>
+    </div>
+
     <div class="filter-scroll">
         <button class="filter-btn active" id="f-all" onclick="setFilter('all')">全部</button>
         <button class="filter-btn" id="f-old" onclick="setFilter('old')">舊戶/一般</button>
@@ -71,8 +100,10 @@
     </div>
 </div>
 
-<div class="container" id="list">
-    <div style="text-align:center; color:#555; padding:50px;">正在同步伺服器資料...</div>
+<div class="container">
+    <div id="list"><div style="text-align:center; color:#555; padding:50px;">正在同步伺服器資料...</div></div>
+    
+    <button class="reset-btn" onclick="resetUsed()">清除所有領取紀錄</button>
 </div>
 
 <div id="pwa-overlay">
@@ -90,6 +121,7 @@
 <div id="toast" class="toast">✅ 已複製，正在開啟 App...</div>
 
 <script>
+    // --- PWA 核心邏輯 ---
     if ('serviceWorker' in navigator) { navigator.serviceWorker.register('sw.js'); }
 
     let deferredPrompt;
@@ -97,56 +129,43 @@
     const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone;
     const isDismissed = localStorage.getItem('pwa_hide_today') === new Date().toDateString();
 
-    // 🚀 核心邏輯：後臺研究
     window.onload = () => {
-        fetchData(); // 第一時間加載資料
-
-        // 在後臺安靜地研究是否需要提示
+        fetchData(); 
+        
+        // 3秒後決定是否顯示安裝提示
         setTimeout(() => {
-            if (isStandalone) {
-                console.log("✅ 檢測到已安裝，完全不跑提示");
-                return;
-            }
-            
-            if (isDismissed) {
-                console.log("⏳ 今日已手動關閉過，不跑提示");
-                return;
-            }
-
-            // 如果不是 App 模式，且今天沒關閉過，才跳出提示
-            console.log("❌ 檢測為瀏覽器，彈出安裝建議");
+            if (isStandalone || isDismissed) return;
             document.getElementById('pwa-overlay').style.display = 'flex';
             if (isIOS) {
                 document.getElementById('android-btn').style.display = 'none';
                 document.getElementById('ios-guide').style.display = 'block';
             }
-        }, 3000); // 給使用者 3 秒鐘自由使用的時間
+        }, 3000); 
     };
 
-    window.addEventListener('beforeinstallprompt', (e) => {
-        e.preventDefault();
-        deferredPrompt = e;
-    });
+    window.addEventListener('beforeinstallprompt', (e) => { e.preventDefault(); deferredPrompt = e; });
 
     function triggerInstall() {
         if (deferredPrompt) {
             deferredPrompt.prompt();
-            deferredPrompt.userChoice.then((choice) => { if (choice.outcome === 'accepted') dismissInstall(); });
-        } else {
-            dismissInstall();
-        }
+            deferredPrompt.userChoice.then((c) => { if (c.outcome === 'accepted') dismissInstall(); });
+        } else { dismissInstall(); }
     }
 
     function dismissInstall() {
         document.getElementById('pwa-overlay').style.display = 'none';
-        // 記住今天已經關過了，不再煩人
         localStorage.setItem('pwa_hide_today', new Date().toDateString());
     }
 
-    // --- 資料載入與顯示 ---
+    // --- 資料與記憶邏輯 ---
     const csvUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSQfG95R3C-8YZIhBsIJUOLckEq3MpPihSYVSszeOgx9jmdnXsyE9ag9NgBx4gbZOUg5-2-qxx7zQit/pub?output=csv';
     let allData = [];
     let currentFilter = 'all';
+    
+    // 讀取本地記憶
+    let usedCodes = JSON.parse(localStorage.getItem('ue_used_codes') || '[]');
+    let hideUsed = localStorage.getItem('ue_hide_used') === 'true';
+    document.getElementById('hide-used-checkbox').checked = hideUsed;
 
     function fetchData() {
         fetch(csvUrl).then(res => res.text()).then(csv => {
@@ -163,29 +182,53 @@
         });
     }
 
+    function toggleHideUsed() {
+        hideUsed = document.getElementById('hide-used-checkbox').checked;
+        localStorage.setItem('ue_hide_used', hideUsed);
+        render();
+    }
+
     function render() {
         const query = document.getElementById('search-input').value.toLowerCase();
         const container = document.getElementById('list');
         container.innerHTML = '';
-        const filtered = allData.filter(i => (currentFilter === 'all' || (currentFilter === 'old' && i.type !== 'new') || i.type === currentFilter) && (i.code.toLowerCase().includes(query) || i.desc.toLowerCase().includes(query)));
+        document.getElementById('used-count').innerText = usedCodes.length;
+
+        const filtered = allData.filter(i => {
+            const matchFilter = (currentFilter === 'all' || (currentFilter === 'old' && i.type !== 'new') || i.type === currentFilter);
+            const matchSearch = i.code.toLowerCase().includes(query) || i.desc.toLowerCase().includes(query);
+            const matchHide = hideUsed ? !usedCodes.includes(i.code) : true; // 開啟隱藏時，只顯示未領取的
+            return matchFilter && matchSearch && matchHide;
+        });
         
         if(filtered.length === 0) {
-            container.innerHTML = '<div style="text-align:center; color:#555; padding:50px;">無符合條件的優惠</div>';
+            container.innerHTML = '<div style="text-align:center; color:#555; padding:50px;">目前無符合的優惠碼</div>';
             return;
         }
 
         filtered.forEach(item => {
+            const isUsed = usedCodes.includes(item.code);
             const card = document.createElement('div');
-            card.className = 'card';
-            card.innerHTML = `<div class="code">${item.code}</div><div style="margin:10px 0; font-weight:600;">${item.desc}</div><div style="font-size:11px; color:#555;">⏳ ${item.end} | ${item.label}</div><button class="copy-btn" onclick="copy('${item.code}')">複製優惠碼</button>`;
+            card.className = `card ${isUsed ? 'used' : ''}`;
+            card.innerHTML = `
+                <div class="code">${item.code}</div>
+                <div style="margin:10px 0; font-weight:600;">${item.desc}</div>
+                <div style="font-size:11px; color:#555;">⏳ ${item.end} | ${item.label}</div>
+                <button class="copy-btn" onclick="copy('${item.code}')">${isUsed ? '已領取' : '複製優惠碼'}</button>
+            `;
             container.appendChild(card);
         });
     }
 
     function copy(code) {
+        if (!usedCodes.includes(code)) {
+            usedCodes.push(code);
+            localStorage.setItem('ue_used_codes', JSON.stringify(usedCodes));
+        }
         navigator.clipboard.writeText(code).then(() => {
             const t = document.getElementById('toast');
             t.classList.add('show');
+            render(); // 重新渲染畫面 (觸發變灰或隱藏)
             setTimeout(() => { t.classList.remove('show'); window.location.href = "ubereats://promotions"; }, 800);
         });
     }
@@ -195,6 +238,14 @@
         document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
         document.getElementById('f-'+f).classList.add('active');
         render();
+    }
+
+    function resetUsed() {
+        if (confirm('確定要清除所有已領取的紀錄嗎？')) {
+            usedCodes = [];
+            localStorage.removeItem('ue_used_codes');
+            render(); // 重置後刷新畫面
+        }
     }
 </script>
 </body>
